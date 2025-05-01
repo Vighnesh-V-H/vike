@@ -19,6 +19,8 @@ import { useState, useTransition } from "react";
 import Authcard from "./authcard";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import FormSuccess from "./formSuccess";
+import { FormError } from "./formError";
 
 function SigninForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -42,9 +44,18 @@ function SigninForm() {
     startTransition(async () => {
       try {
         const response = await axios.post("/api/signin", values);
+        console.log(response.data);
         if (response.status === 200) {
           router.push("/dashboard");
         }
+        if (response.status === 201) {
+          response.data.success ? setSuccess(response.data.success) : null;
+        }
+
+        if (response.data.error) {
+          setError(response.data.error);
+        }
+
         return response.data;
       } catch (error: any) {
         return {
@@ -113,6 +124,8 @@ function SigninForm() {
               </FormItem>
             )}
           />
+          <FormSuccess message={success} />
+          <FormError message={error} />
           <Button
             type='submit'
             disabled={isPending}

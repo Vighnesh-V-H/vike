@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { generateVerificationToken } from "@/lib/token";
-// import { sendVerificationEmail } from "@/lib/mail";
+import { sendVerificationEmail } from "@/lib/mail";
 
 export async function POST(req: Request) {
   try {
@@ -42,12 +42,12 @@ export async function POST(req: Request) {
       password: hashedPassword,
     });
 
-    // const verificationToken = await generateVerificationToken(email);
+    const verificationToken = await generateVerificationToken(email);
 
-    // await sendVerificationEmail(
-    //   verificationToken.email,
-    //   verificationToken.token
-    // );
+    await sendVerificationEmail(
+      verificationToken.email,
+      verificationToken.token
+    );
 
     return NextResponse.json(
       { success: "Confirmation email sent" },

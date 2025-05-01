@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { db } from "@/db/schema";
+
 import {
   changeEmailToken,
   passwordResetToken,
@@ -12,10 +12,18 @@ import {
 } from "@/lib/userQueries";
 import { generateOTP } from "./helpers";
 import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+
+const connectionString = process.env.DATABASE_URL || "";
+
+const client = postgres(connectionString, { prepare: false });
+const db = drizzle(client);
 
 export const generateVerificationToken = async (email: string) => {
   const token = v4();
   const expires = new Date(Date.now() + 3600 * 1000);
+  console.log(token);
 
   const existingToken = await getVerificationTokenByEmail(email);
 
@@ -42,6 +50,8 @@ export const generatePasswordResetToken = async (email: string) => {
   const expires = new Date(Date.now() + 3600 * 1000);
 
   const existingToken = await getPasswordResertTokenByEmail(email);
+
+  console.log(existingToken);
 
   if (existingToken) {
     await db
