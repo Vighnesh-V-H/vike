@@ -20,7 +20,7 @@ import Authcard from "./authcard";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import FormSuccess from "./formSuccess";
-import { FormError } from "./formError";
+import FormError from "./formError";
 
 function SigninForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -58,9 +58,7 @@ function SigninForm() {
 
         return response.data;
       } catch (error: any) {
-        return {
-          error: error.response?.data?.error || "Something went wrong",
-        };
+        setError(error.response?.data?.error);
       }
     });
   }

@@ -14,11 +14,9 @@ import { generateOTP } from "./helpers";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { db } from "@/db";
 
-const connectionString = process.env.DATABASE_URL || "";
 
-const client = postgres(connectionString, { prepare: false });
-const db = drizzle(client);
 
 export const generateVerificationToken = async (email: string) => {
   const token = v4();
@@ -51,7 +49,6 @@ export const generatePasswordResetToken = async (email: string) => {
 
   const existingToken = await getPasswordResertTokenByEmail(email);
 
-  console.log(existingToken);
 
   if (existingToken) {
     await db

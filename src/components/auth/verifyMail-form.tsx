@@ -5,7 +5,7 @@ import Authcard from "./authcard";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { CardFooter } from "../ui/card";
-import { FormError } from "./formError";
+import FormError from "./formError";
 import FormSuccess from "./formSuccess";
 
 function VerifyMailForm() {
@@ -22,20 +22,26 @@ function VerifyMailForm() {
       return;
     }
 
-    const response = await axios.post(`api/verify-mail`, { token });
+    try {
+      const response = await axios.post(`api/verify-mail`, { token });
 
-    if (response.data.success) {
-      setSuccess(success);
-    }
-    if (response.data.error) {
-      setError(error);
-    }
+      if (response.data.success) {
+        setSuccess(success);
+      }
+      if (response.data.error) {
+        setError(error);
+      }
 
-    if (response.status === 200) {
-      router.push("/signin");
-    }
+      if (response.status === 200) {
+        router.push("/signin");
+      }
 
-    return response;
+      return response;
+    } catch (error) {
+      // @ts-expect-error
+      setError(error?.response?.data?.error);
+      return;
+    }
   }, [token]);
 
   useEffect(() => {

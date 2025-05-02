@@ -118,7 +118,7 @@ const confirmChangeMailTemplate = (otp: string) => `
 `;
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
-  const resetLink = `http://localhost:3000/auth/reset-password?token=${token}`;
+  const resetLink = `http://localhost:3000/reset-password?token=${token}`;
   try {
     await transporter.sendMail({
       from: process.env.SMTP_USER,

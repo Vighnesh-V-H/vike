@@ -17,3 +17,15 @@ export const SignInSchema = z.object({
     .email("Invalid email"),
   password: z.string().min(6, "Password must be atleast 6 characters"),
 });
+
+export const resetPasswordSchema = z.object({
+  email: z
+    .string({ message: "Email is Required" })
+    .email("Invalid email format"),
+});
+
+export const newPasswordSchema = z.object({
+  password: z
+    .string({ message: "password is required" })
+    .min(6, "Password must be at least 6 characters"), // Adjust minimum length as needed
+});

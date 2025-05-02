@@ -1,6 +1,10 @@
 import { TriangleAlertIcon } from "lucide-react";
 
-export function FormError({ message }: { message: string | undefined }) {
+export default function FormError({
+  message,
+}: {
+  message: string | undefined;
+}) {
   return (
     <>
       {message && (
