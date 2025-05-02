@@ -1,3 +1,22 @@
+import {
+  BookOpen,
+  Bot,
+  BotIcon,
+  LayoutDashboardIcon,
+  LineChart,
+  Mail,
+  MessageSquare,
+  Settings,
+  Settings2,
+  Shield,
+  Sparkles,
+  SquareTerminal,
+  Target,
+  Users,
+  Workflow,
+  Zap,
+} from "lucide-react";
+
 export type FAQItem = {
   question: string;
   answer: string;
@@ -278,3 +297,45 @@ export const testimonials: Testimonial[] = [
     },
   },
 ];
+
+export const sideBarOptions = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "/dashboard",
+      icon: LayoutDashboardIcon,
+    },
+
+    {
+      title: "Leads",
+      url: "/leads",
+      icon: Mail,
+    },
+    {
+      title: "Tasks",
+      url: "#",
+      icon: BookOpen,
+    },
+    {
+      title: "Settings",
+      url: "/settings",
+      icon: Settings,
+    },
+    {
+      title: "Integrations",
+      url: "/integrations",
+      icon: Workflow,
+    },
+    {
+      title: "Agent",
+      url: "/agent",
+      icon: BotIcon,
+      isActive: true,
+    },
+  ],
+};
