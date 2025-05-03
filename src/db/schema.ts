@@ -122,3 +122,29 @@ export const changeEmailToken = pgTable(
     };
   }
 );
+
+
+export const chatHistory = pgTable("chat_history", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const chatMessages = pgTable("chat_messages", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  chatId: text("chat_id")
+    .notNull()
+    .references(() => chatHistory.id),
+  role: text("role")
+    .$type<"data" | "system" | "user" | "assistant">()
+    .notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
