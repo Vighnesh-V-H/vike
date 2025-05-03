@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipGlobal } from "@/components/tooltip-global";
+import Path from "@/components/path";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -28,7 +29,7 @@ function Layout({ children }: { children: React.ReactNode }) {
                 className='mr-2 dark:bg-[#fff] bg-black h-4'
               />
 
-              <h1>hi</h1>
+              <Path />
             </div>
             <div className='flex items-center gap-3 mr-4'>
               <ThemeToggle />
