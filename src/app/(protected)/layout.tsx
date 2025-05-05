@@ -11,6 +11,8 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipGlobal } from "@/components/tooltip-global";
 import Path from "@/components/path";
 
+
+
 function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className='h-screen bg-black flex overflow-x-hidden'>

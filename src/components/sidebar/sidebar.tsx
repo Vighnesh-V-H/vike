@@ -34,16 +34,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible='icon' {...props}>
       <SidebarHeader className='border-b bg-black flex gap-2 relative'>
         <SidebarMenu className='bg-black text-white relative z-10'>
-          Vasist
+          Vike
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className='bg-black  relative overflow-hidden'>
-        {/* <div className='absolute w-[400px] h-[500px] rounded-full bg-[#2e7bef36] -right-32 top-20 blur-3xl' /> */}
         <NavMain items={sideBarOptions.navMain} />
       </SidebarContent>
-      <SidebarFooter className='border-t bg-black relative'>
-        {/* <NavUser /> */}
-      </SidebarFooter>
+      <SidebarFooter className='border-t bg-black relative'></SidebarFooter>
       <SidebarRail className='' />
     </Sidebar>
   );
