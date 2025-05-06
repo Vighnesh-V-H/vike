@@ -8,10 +8,12 @@ import {
   index,
   uniqueIndex,
   uuid,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import type { AdapterAccountType } from "next-auth/adapters";
+import { relations } from "drizzle-orm";
 
 const connectionString = "postgres://postgres:postgres@localhost:5432/drizzle";
 const pool = postgres(connectionString, { max: 1 });
@@ -115,14 +117,11 @@ export const changeEmailToken = pgTable(
     expires: timestamp("expires").notNull(),
     emailVerified: boolean("email_verified").default(false).notNull(),
   },
-  (table) => {
-    return {
-      emailTokenUnique: uniqueIndex().on(table.email, table.token),
-      expiresIdx: index("expires_idx").on(table.expires),
-    };
-  }
+  (table) => [
+    uniqueIndex("emailTokenUnique").on(table.email, table.token),
+    index("expires_idx").on(table.expires),
+  ]
 );
-
 
 export const chatHistory = pgTable("chat_history", {
   id: text("id")
@@ -148,3 +147,37 @@ export const chatMessages = pgTable("chat_messages", {
   content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const integrations = pgTable(
+  "integrations",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(), // Using IntegrationType
+    name: text("name"),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    expiresAt: timestamp("expires_at", { mode: "date" }),
+    scope: text("scope"),
+    tokenType: text("token_type"),
+    data: jsonb("data"),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("user_type_name_idx").on(table.userId, table.type, table.name),
+    index("user_id_idx").on(table.userId),
+    index("type_idx").on(table.type),
+  ]
+);
+
+export const usersRelations = relations(users, ({ many }) => ({
+  integrations: many(integrations),
+}));
