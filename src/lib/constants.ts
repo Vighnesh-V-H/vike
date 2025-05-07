@@ -35,6 +35,7 @@ import {
   Testimonial,
 } from "./types";
 
+
 export const faqItems: FAQItem[] = [
   {
     question: "How does the AI agent automation work?",
@@ -316,12 +317,14 @@ export const sideBarOptions = {
   ],
 };
 
+
+
 export const integrations: Integration[] = [
   {
-    name: "Google Drive",
+    name: "google",
     description: "Connect to Google Drive for document storage and sharing.",
     icon: HardDrive,
-    redirectUrl: "https://accounts.google.com/o/oauth2/auth",
+    redirectUrl: "authurl",
     color: "bg-blue-500",
   },
   {

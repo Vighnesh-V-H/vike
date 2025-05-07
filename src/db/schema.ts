@@ -157,7 +157,7 @@ export const integrations = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    type: text("type").notNull(), // Using IntegrationType
+    type: text("type").notNull(),
     name: text("name"),
     accessToken: text("access_token"),
     refreshToken: text("refresh_token"),
