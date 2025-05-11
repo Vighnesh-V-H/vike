@@ -214,7 +214,7 @@ export const documentSources = pgTable("document_sources", {
 export const documents = pgTable(
   "documents",
   {
-    id: bigserial("id", { mode: "number" }).notNull().primaryKey(),
+    id: serial("id").notNull().primaryKey(),
     uuid: varchar("uuid", { length: 36 })
       .notNull()
       .unique()
@@ -236,14 +236,14 @@ export const documents = pgTable(
     // Processing status
     processingStatus: varchar("processing_status", { length: 50 })
       .notNull()
-      .default("pending"), // pending, processing, completed, failed
+      .default("pending"),
     isSuccessfullyProcessed: boolean("is_successfully_processed").default(
       false
     ),
     errorMessage: text("error_message"),
 
     // User association
-    userId: integer("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
 
@@ -344,7 +344,7 @@ export const embeddingJobs = pgTable(
       .notNull()
       .references(() => documents.id, { onDelete: "cascade" }),
 
-    userId: integer("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
 
