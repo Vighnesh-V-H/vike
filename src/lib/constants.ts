@@ -359,3 +359,7 @@ export const integrations: Integration[] = [
     color: "bg-gray-800",
   },
 ];
+
+
+export const scopes =
+  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/documents.readonly";

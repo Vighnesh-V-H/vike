@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOAuth2Client } from "@/lib/integrations/google";
+import { getDocs, getOAuth2Client } from "@/lib/integrations/google";
 import { auth } from "@/auth";
 
 import crypto from "crypto";
@@ -38,13 +38,16 @@ export async function GET(request: NextRequest) {
     const oauth2Client = getOAuth2Client();
     const { tokens } = await oauth2Client.getToken(code);
 
-    // Generate a unique ID for this integration
     const integrationId = crypto.randomUUID();
 
-    // encrypting sensitive tokens
     const encryptedRefreshToken = tokens.refresh_token
       ? await encrypt(tokens.refresh_token)
       : null;
+
+    if (tokens.refresh_token) {
+      oauth2Client.setCredentials({ refresh_token: tokens.refresh_token });
+      getDocs(oauth2Client);
+    }
 
     await db.insert(integrations).values({
       id: integrationId,
@@ -60,10 +63,8 @@ export async function GET(request: NextRequest) {
       isActive: true,
     });
 
-    // Set a secure cookie with integration ID
     await setIntegrationCookie(integrationId);
 
-    // Redirect to success page
     return NextResponse.redirect(new URL("/integrations", request.url));
   } catch (error: any) {
     console.error("OAuth callback error:", error);

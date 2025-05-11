@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { CheckCircle, ExternalLink } from "lucide-react";
 import axios from "axios";
+import { scopes } from "@/lib/constants";
 
 function GoogleAuthButton() {
   const [isConnected, setIsConnected] = useState(false);
@@ -40,33 +41,13 @@ function GoogleAuthButton() {
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
       redirect_uri: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI!,
       response_type: "code",
-      scope: "https://www.googleapis.com/auth/drive.readonly",
+      scope: scopes,
       access_type: "offline",
       prompt: "consent",
     });
 
     return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
   };
-
-  // const handleDisconnect = async () => {
-  //   try {
-  //     setIsLoading(true);
-  //     const response = await fetch("/api/integrations/google/disconnect", {
-  //       method: "POST",
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to disconnect");
-  //     }
-
-  //     setIsConnected(false);
-  //   } catch (err) {
-  //     console.error("Error disconnecting Google account:", err);
-  //     setError("Failed to disconnect");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   if (isLoading) {
     return (
