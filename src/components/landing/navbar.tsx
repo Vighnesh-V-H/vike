@@ -34,7 +34,6 @@ export default function Navbar() {
           <span className='text-xl font-bold'>AutoCRM</span>
         </div>
 
-        {/* Desktop Navigation */}
         <nav className='hidden md:flex items-center gap-6'>
           {navItems.map((item) => (
             <Link
@@ -48,15 +47,18 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <div className='hidden md:flex items-center gap-4'>
-          <ThemeToggle />
-          <Button variant='outline' size='sm'>
-            Log in
-          </Button>
-          <Button size='sm'>Get Started</Button>
+        <div className=' md:flex items-center gap-4'>
+          <div className='hidden md:flex items-center gap-4'>
+            <ThemeToggle /> <Button size='sm'>Get Started</Button>
+          </div>
+
+          <Link href={"/signin"}>
+            <Button variant='outline' size='sm' className='cursor-pointer'>
+              Sign In
+            </Button>
+          </Link>
         </div>
 
-        {/* Mobile Menu Button */}
         <button className='md:hidden' onClick={toggleMenu}>
           {isMenuOpen ? (
             <X className='h-6 w-6' />
@@ -66,7 +68,6 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className='md:hidden p-4 pt-0 bg-background border-b'>
           <nav className='flex flex-col space-y-4 py-4'>

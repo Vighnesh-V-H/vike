@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db"; // adjust path
-import { chatMessages } from "@/db/schema";
+import { chatHistory, chatMessages } from "@/db/schema";
 import { auth } from "@/auth"; // your session handler
 
 export async function getMessagesById(chatId: string) {
@@ -22,5 +22,40 @@ export async function getMessagesById(chatId: string) {
   } catch (error) {
     console.error("Failed to fetch messages from database", error);
     return new Response("Internal Server Error", { status: 500 });
+  }
+}
+
+export async function getChatHistoryWithMessages(userId: string) {
+  try {
+    // Fetch all sessions for the user
+    const sessions = await db
+      .select()
+      .from(chatHistory)
+      .where(eq(chatHistory.userId, userId))
+      .orderBy(desc(chatHistory.createdAt));
+
+    const results = await Promise.all(
+      sessions.map(async (session) => {
+        const messages = await db
+          .select({
+            content: chatMessages.content,
+            role: chatMessages.role,
+            createdAt: chatMessages.createdAt,
+          })
+          .from(chatMessages)
+          .where(eq(chatMessages.chatId, session.id))
+          .orderBy(asc(chatMessages.createdAt));
+
+        return {
+          ...session,
+          messages,
+        };
+      })
+    );
+
+    return results;
+  } catch (error) {
+    console.error("Error fetching chat history with messages", error);
+    throw error;
   }
 }

@@ -13,7 +13,7 @@ async function ChatId({
     return <div>Unauthorized</div>;
   }
 
-  // Handle both Promise and direct object cases
+
   const resolvedParams = params instanceof Promise ? await params : params;
   const chatId = resolvedParams.chatId;
 
@@ -25,7 +25,7 @@ async function ChatId({
     return <div>Error loading messages</div>;
   }
 
-  return <ChatForm initialMessages={messages} />;
+  return <ChatForm initialMessages={messages} chatId={chatId} />;
 }
 
 export default ChatId;

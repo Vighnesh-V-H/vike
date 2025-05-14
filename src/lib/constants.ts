@@ -15,12 +15,26 @@ import {
   Users,
   Workflow,
   Zap,
+  Github,
+  Twitter,
+  Slack,
+  Database,
+  Cloud,
+  CreditCard,
+  BarChart,
+  FileText,
+  HardDrive,
 } from "lucide-react";
 
-export type FAQItem = {
-  question: string;
-  answer: string;
-};
+import {
+  FAQItem,
+  Integration,
+  FeatureItem,
+  NavItem,
+  PricingPlan,
+  Testimonial,
+} from "./types";
+
 
 export const faqItems: FAQItem[] = [
   {
@@ -54,17 +68,6 @@ export const faqItems: FAQItem[] = [
       "We offer monthly and annual billing options, with a 20% discount for annual plans. You can upgrade, downgrade, or cancel your subscription at any time. We also offer custom enterprise pricing for large organizations with specific requirements.",
   },
 ];
-
-export type FeatureItem = {
-  title: string;
-  description: string;
-  icon: string;
-  size?: "small" | "large" | "wide";
-  image?: {
-    src: string;
-    alt: string;
-  };
-};
 
 export const features: FeatureItem[] = [
   {
@@ -133,12 +136,6 @@ export const features: FeatureItem[] = [
   },
 ];
 
-export type NavItem = {
-  title: string;
-  href: string;
-  external?: boolean;
-};
-
 export const navItems: NavItem[] = [
   {
     title: "Features",
@@ -185,16 +182,6 @@ export const footerNavigation = {
     { title: "LinkedIn", href: "#", icon: "Linkedin" },
     { title: "GitHub", href: "#", icon: "Github" },
   ],
-};
-
-export type PricingPlan = {
-  name: string;
-  description: string;
-  price: number;
-  popular?: boolean;
-  features: string[];
-  buttonText: string;
-  buttonVariant?: "default" | "outline";
 };
 
 export const pricingPlans: PricingPlan[] = [
@@ -244,16 +231,6 @@ export const pricingPlans: PricingPlan[] = [
     buttonVariant: "outline",
   },
 ];
-
-export type Testimonial = {
-  content: string;
-  author: {
-    name: string;
-    role: string;
-    company: string;
-    image?: string;
-  };
-};
 
 export const testimonials: Testimonial[] = [
   {
@@ -339,3 +316,50 @@ export const sideBarOptions = {
     },
   ],
 };
+
+
+
+export const integrations: Integration[] = [
+  {
+    name: "google",
+    description: "Connect to Google Drive for document storage and sharing.",
+    icon: HardDrive,
+    redirectUrl: "authurl",
+    color: "bg-blue-500",
+  },
+  {
+    name: "GitHub",
+    description: "Connect your GitHub repositories for seamless integration.",
+    icon: Github,
+    redirectUrl: "https://github.com/login/oauth/authorize",
+    color: "bg-gray-900",
+  },
+  {
+    name: "Twitter",
+    description: "Share updates and connect with your audience on Twitter.",
+    icon: Twitter,
+    redirectUrl: "https://twitter.com/oauth",
+    color: "bg-blue-400",
+  },
+  {
+    name: "Slack",
+    description:
+      "Get notifications and updates directly in your Slack workspace.",
+    icon: Slack,
+    redirectUrl: "https://slack.com/oauth/authorize",
+    color: "bg-purple-500",
+  },
+
+  {
+    name: "Notion",
+    description:
+      "Integrate with Notion for notes, documents, and project management.",
+    icon: FileText,
+    redirectUrl: "https://api.notion.com/v1/oauth/authorize",
+    color: "bg-gray-800",
+  },
+];
+
+
+export const scopes =
+  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/documents.readonly";
