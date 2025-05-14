@@ -186,30 +186,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   integrations: many(integrations),
 }));
 
-export const documentSourceType = pgTable("document_source_types", {
-  type: varchar("type", { length: 50 }).primaryKey(),
-  description: text("description"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
 
-export const documentSources = pgTable("document_sources", {
-  id: serial("id").primaryKey(),
-  sourceType: varchar("source_type", { length: 50 })
-    .references(() => documentSourceType.type)
-    .notNull(),
-  name: varchar("name", { length: 100 }).notNull(),
-  description: text("description"),
-  isActive: boolean("is_active").default(true),
-  config: jsonb("config"), // Store integration-specific configuration
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
 
 export const documents = pgTable(
   "documents",
@@ -221,19 +198,15 @@ export const documents = pgTable(
       .$defaultFn(() => crypto.randomUUID()),
 
     // Source tracking
-    sourceType: varchar("source_type", { length: 50 })
-      .references(() => documentSourceType.type)
-      .notNull(),
-    sourceId: varchar("source_id", { length: 255 }).notNull(), // External ID from the source system
+    sourceType: varchar("source_type").notNull(), // Removed FK
+    sourceId: varchar("source_id", { length: 255 }).notNull(),
 
     // Universal document properties
     title: text("title").notNull(),
     fileName: text("file_name").notNull(),
     mimeType: text("mime_type").notNull(),
-    content: text("content"), // Full document content
-    contentSize: integer("content_size"), // Size in bytes
+    content: text("content").notNull(),
 
-    // Processing status
     processingStatus: varchar("processing_status", { length: 50 })
       .notNull()
       .default("pending"),
@@ -247,7 +220,6 @@ export const documents = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
 
-    // Content hash for deduplication
     contentHash: text("content_hash"),
 
     // Timestamps
@@ -259,24 +231,21 @@ export const documents = pgTable(
       .defaultNow(),
     lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
 
-    // Optional fields for additional metadata
     description: text("description"),
-    metadata: jsonb("metadata"), // Flexible field for integration-specific metadata
+    metadata: jsonb("metadata"),
   },
-  (table) => ({
-    documentsIdIdx: uniqueIndex("document_id_idx").on(table.id),
-    documentsUuidIdx: uniqueIndex("document_uuid_idx").on(table.uuid),
-    documentsSourceIdIdx: index("document_source_id_idx").on(table.sourceId),
-    documentsUserSourceIdx: uniqueIndex("document_user_source_idx").on(
+  (table) => [
+    uniqueIndex("document_id_idx").on(table.id),
+    uniqueIndex("document_uuid_idx").on(table.uuid),
+    index("document_source_id_idx").on(table.sourceId),
+    uniqueIndex("document_user_source_idx").on(
       table.userId,
       table.sourceType,
       table.sourceId
     ),
-    documentsSourceTypeIdx: index("document_source_type_idx").on(
-      table.sourceType
-    ),
-    documentsStatusIdx: index("document_status_idx").on(table.processingStatus),
-    searchIndex: index("documents_search_idx").using(
+    index("document_source_type_idx").on(table.sourceType),
+    index("document_status_idx").on(table.processingStatus),
+    index("documents_search_idx").using(
       "gin",
       sql`(
         setweight(to_tsvector('english', coalesce(${table.content}, '')),'A') ||
@@ -284,7 +253,7 @@ export const documents = pgTable(
         setweight(to_tsvector('english', coalesce(${table.fileName}, '')),'C')
       )`
     ),
-  })
+  ]
 );
 
 export const chunk = pgTable(
@@ -339,7 +308,6 @@ export const embeddingJobs = pgTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
 
-    // Reference to document being processed
     documentId: integer("document_id")
       .notNull()
       .references(() => documents.id, { onDelete: "cascade" }),
@@ -348,22 +316,16 @@ export const embeddingJobs = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
 
-    // Job status tracking
-    status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, processing, completed, failed
+    status: varchar("status", { length: 50 }).notNull().default("pending"),
     error: text("error"),
 
-    // Progress tracking
-    progress: integer("progress").default(0), // 0-100 percentage
+    progress: integer("progress").default(0),
     totalChunks: integer("total_chunks"),
     processedChunks: integer("processed_chunks").default(0),
 
-    // Job source and type info
-    sourceType: varchar("source_type", { length: 50 })
-      .references(() => documentSourceType.type)
-      .notNull(),
-    priority: integer("priority").default(1), // Higher number = higher priority
+    sourceType: varchar("source_type", { length: 50 }).notNull(), // Removed FK
+    priority: integer("priority").default(1),
 
-    // Timestamps
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -372,20 +334,17 @@ export const embeddingJobs = pgTable(
       .defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
   },
-  (table) => {
-    return {
-      docIdx: index("embedding_job_document_id_idx").on(table.documentId),
-      userIdx: index("embedding_job_user_id_idx").on(table.userId),
-      statusIdx: index("embedding_job_status_idx").on(table.status),
-      sourceTypeIdx: index("embedding_job_source_type_idx").on(
-        table.sourceType
-      ),
-      // Add index to help with job queue processing
-      priorityStatusIdx: index("embedding_job_priority_status_idx").on(
-        table.priority,
-        table.status,
-        table.createdAt
-      ),
-    };
-  }
+  (table) => ({
+    docIdx: index("embedding_job_document_id_idx").on(table.documentId),
+    userIdx: index("embedding_job_user_id_idx").on(table.userId),
+    statusIdx: index("embedding_job_status_idx").on(table.status),
+    sourceTypeIdx: index("embedding_job_source_type_idx").on(table.sourceType),
+    priorityStatusIdx: index("embedding_job_priority_status_idx").on(
+      table.priority,
+      table.status,
+      table.createdAt
+    ),
+  })
 );
+
+export type Document = typeof documents.$inferInsert;
