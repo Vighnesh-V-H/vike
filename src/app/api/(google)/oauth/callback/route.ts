@@ -117,7 +117,9 @@ export async function GET(request: NextRequest) {
             .where(eq(documents.contentHash, contentHash))
             .limit(1);
 
-          await processDocument(existing.id);
+     if (existing) {
+       await processDocument(existing.id);
+     }
 
           if (!existing) {
             const [document] = await db

@@ -33,7 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible='icon' {...props}>
       <SidebarHeader className='border-b bg-black flex gap-2 relative'>
-        <SidebarMenu className='bg-black text-white relative z-10'>
+        <SidebarMenu className='bg-black text-white h-10 relative z-10'>
           Vike
         </SidebarMenu>
       </SidebarHeader>
