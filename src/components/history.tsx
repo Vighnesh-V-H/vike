@@ -1,8 +1,8 @@
 "use client";
 
 import { Clock, Loader2 } from "lucide-react";
-import { useRef, useEffect } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useRef, useEffect, useState } from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
 import {
@@ -11,17 +11,19 @@ import {
   SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 
-
 async function fetchHistory() {
   const response = await fetch(`/api/fetch-history`);
   if (!response.ok) {
     throw new Error("Failed to fetch history");
   }
-  return response.json();
+  const data = await response.json();
+  console.log("Raw API response:", data);
+  return data;
 }
 
 export function History() {
-  const historyContainerRef = useRef<HTMLDivElement>(null);
+  const historyContainerRef = useRef<HTMLDivElement | null>(null);
+  const queryClient = useQueryClient();
 
   const {
     data,
@@ -30,15 +32,29 @@ export function History() {
     isFetchingNextPage,
     isLoading,
     error,
+    refetch,
   } = useInfiniteQuery({
     queryKey: ["history"],
     queryFn: ({ pageParam }) => fetchHistory(),
-    initialPageParam: null as string | null,
+    initialPageParam: null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     enabled: true,
+    staleTime: 0,
   });
 
-  const historyItems = data?.pages.flat() || [];
+  console.log("History data structure:", data);
+
+  const historyItems =
+    data?.pages.flatMap((page) => {
+      if (Array.isArray(page)) {
+        return page;
+      } else if (page?.items && Array.isArray(page.items)) {
+        return page.items;
+      } else if (page && typeof page === "object") {
+        return [page];
+      }
+      return [];
+    }) || [];
 
   useEffect(() => {
     const currentRef = historyContainerRef.current;
@@ -62,6 +78,60 @@ export function History() {
       }
     }
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+    }, 5000);
+    const setupWebSocketListener = () => {
+      try {
+        const ws = new WebSocket(
+          `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${
+            window.location.host
+          }/api/history-updates`
+        );
+
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.type === "history-update") {
+            queryClient.invalidateQueries({ queryKey: ["history"] });
+          }
+        };
+
+        ws.onclose = () => {
+          setTimeout(setupWebSocketListener, 2000);
+        };
+
+        return ws;
+      } catch (err) {
+        console.error(
+          "WebSocket connection failed, falling back to polling",
+          err
+        );
+        return null;
+      }
+    };
+
+    // Try WebSocket first, fall back to polling
+    const ws = setupWebSocketListener();
+
+    return () => {
+      clearInterval(interval);
+      if (ws) ws.close();
+    };
+  }, [queryClient]);
+
+  useEffect(() => {
+    const handleNewMessage = () => {
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+    };
+
+    window.addEventListener("chat:new-message", handleNewMessage);
+
+    return () => {
+      window.removeEventListener("chat:new-message", handleNewMessage);
+    };
+  }, [queryClient]);
 
   return (
     <div
