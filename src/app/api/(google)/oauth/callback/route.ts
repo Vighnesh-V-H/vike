@@ -10,6 +10,8 @@ import { documents, integrations } from "@/db/schema";
 import { google } from "googleapis";
 import { eq } from "drizzle-orm";
 import { processDocument } from "@/lib/docProcessor";
+import { documentQueue } from "@/lib/queue";
+import { startWorker } from "@/lib/workers";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -117,9 +119,13 @@ export async function GET(request: NextRequest) {
             .where(eq(documents.contentHash, contentHash))
             .limit(1);
 
-     if (existing) {
-       await processDocument(existing.id);
-     }
+          if (existing) {
+            const res = await documentQueue.add("process-existing", {
+              documentId: existing.id,
+            });
+            const worker = startWorker();
+            console.log(worker);
+          }
 
           if (!existing) {
             const [document] = await db
@@ -142,7 +148,12 @@ export async function GET(request: NextRequest) {
                 } as const,
               })
               .returning();
-            await processDocument(document.id);
+            const res = await documentQueue.add("process-new", {
+              documentId: document.id,
+            });
+
+            const worker = startWorker();
+            console.log(worker);
           }
         } catch (err: any) {
           console.error(

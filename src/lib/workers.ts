@@ -1,74 +1,48 @@
-"use server";
-import { Job } from "bullmq";
-import { QUEUE_NAMES, createWorker, createQueue } from "@/lib/queue";
+// lib/queue/worker.ts
+import { Worker } from "bullmq";
+import IORedis from "ioredis";
 import { processDocument } from "@/lib/docProcessor";
 
-// Interface for document processing job data
-interface DocumentProcessingJob {
-  documentId: number;
-}
+// Create dedicated Redis connection for worker
+const connection = new IORedis(process.env.REDIS_DATABASE_URL!, {
+  tls: {
+    rejectUnauthorized: false,
+  },
+  maxRetriesPerRequest: null,
+});
 
-/**
- * Worker to process documents asynchronously
- */
-export async function startDocumentProcessingWorker() {
-  // Create scheduler for the queue
-  const scheduler = createQueue(QUEUE_NAMES.DOCUMENT_PROCESSING);
+let workerInstance: Worker | null = null;
 
-  // Create the worker
-  const worker = createWorker(
-    QUEUE_NAMES.DOCUMENT_PROCESSING,
-    async (job: Job<DocumentProcessingJob>) => {
-      const { documentId } = job.data;
-
-      console.log(`🔄 Processing document: ${documentId} (Job ID: ${job.id})`);
-
-      try {
-        // Process the document
+export function startWorker() {
+  if (!workerInstance) {
+    workerInstance = new Worker(
+      "document-processing",
+      async (job) => {
+        const { documentId } = job.data;
+        console.log(`Processing document ${documentId}`);
         await processDocument(documentId);
-
-        // Log success
-        console.log(
-          `✅ Document ${documentId} processing completed successfully`
-        );
-        return { success: true, documentId };
-      } catch (error) {
-        // Log error
-        console.error(`❌ Error processing document ${documentId}:`, error);
-        throw error; // Re-throw to let BullMQ handle retries
-      }
-    },
-    {
-      // Configure concurrency - how many jobs to process at once
-      concurrency: 2,
-
-      // Configure retry strategy
-      attempts: 3,
-      backoff: {
-        type: "exponential",
-        delay: 5000, // 5 seconds initial delay
       },
-    }
-  );
+      {
+        connection, // Use the dedicated connection
+        limiter: { max: 5, duration: 1000 },
+        useWorkerThreads: false, // Disable if not using worker threads
+      }
+    );
 
-  // Handle worker events
-  worker.on("completed", (job: Job) => {
-    console.log(`✅ Job ${job.id} completed successfully`);
-  });
+    // Add error handling
+    connection.on("error", (err) => {
+      console.error("Redis connection error:", err);
+    });
 
-  worker.on("failed", (job: Job | undefined, error: Error, prev: string) => {
-    if (job) {
-      console.error(`❌ Job ${job.id} failed:`, error);
-    } else {
-      console.error("❌ Job failed:", error);
-    }
-  });
+    workerInstance.on("completed", (job) => {
+      console.log(`Document ${job.data.documentId} processed successfully`);
+    });
 
-  worker.on("error", (error: Error) => {
-    console.error("Worker error:", error);
-  });
+    workerInstance.on("failed", (job, err) => {
+      console.error(`Document ${job?.data.documentId} failed:`, err);
+    });
 
-  console.log(`🚀 Document processing worker started`);
-
-  return { worker, scheduler };
+    console.log("📚 Worker started");
+  }
+  return workerInstance;
 }

@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { chatHistory, chatMessages, documents, chunk } from "@/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
-import { createEmbedding } from "@/lib/docProcessor";
+import { createEmbedding } from "@/lib/embedding";
 import { StreamData } from "ai";
 
 export async function POST(req: Request) {

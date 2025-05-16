@@ -1,5 +1,5 @@
 import { google } from "googleapis";
-import chunkText from "../chunker";
+
 import { db } from "@/db";
 
 const credentials = {
