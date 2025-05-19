@@ -46,6 +46,7 @@ export function ChatForm({
     onFinish: () => {
       router.push(`/agent/chat/${id}`);
     },
+
     initialMessages: initialMessages,
   });
 

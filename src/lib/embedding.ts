@@ -1,11 +1,9 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize Google AI
 const genAI = new GoogleGenAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
 });
 
-// Rate limiting configuration
 const EMBEDDING_CONFIG = {
   MAX_REQUESTS_PER_MINUTE: 140,
   BATCH_SIZE: 10,
@@ -13,7 +11,7 @@ const EMBEDDING_CONFIG = {
   BASE_DELAY_MS: 1000,
 };
 
-// Global state for rate limiting
+
 declare global {
   var embeddingQueue: Array<{
     text: string;

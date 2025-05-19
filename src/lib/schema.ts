@@ -29,3 +29,13 @@ export const newPasswordSchema = z.object({
     .string({ message: "password is required" })
     .min(6, "Password must be at least 6 characters"), // Adjust minimum length as needed
 });
+
+export const googleTaskSchema = z.object({
+  title: z.string().describe("the task title"),
+  notes: z.string().optional().describe("notes or details about the task"),
+  due: z.string().optional().describe("due date/time in ISO 8601 format"),
+  taskListId: z
+    .string()
+    .optional()
+    .describe("the ID of the task list to insert into"),
+});

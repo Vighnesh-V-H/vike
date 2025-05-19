@@ -28,6 +28,7 @@ export function getScopes() {
     "email profile",
     "https://www.googleapis.com/auth/drive.readonly",
     "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/tasks",
   ];
 }
 
@@ -37,8 +38,6 @@ export async function getDocs(oauth2Client: any) {
   const res = await drive.files.list({
     q: "mimeType='application/vnd.google-apps.document'",
   });
-
-  console.log(res.data.files);
 
   const files = res.data.files || [];
 

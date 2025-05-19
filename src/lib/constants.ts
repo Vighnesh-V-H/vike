@@ -362,4 +362,4 @@ export const integrations: Integration[] = [
 
 
 export const scopes =
-  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file ";
+  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file  https://www.googleapis.com/auth/tasks";

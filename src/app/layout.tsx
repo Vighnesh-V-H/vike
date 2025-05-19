@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { SpotlightProvider } from "@/providers/modal-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
