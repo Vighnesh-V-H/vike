@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDocs, getOAuth2Client } from "@/lib/integrations/google/google";
-import { getGoogleTasks } from "@/lib/integrations/google/googleTasks";
 import { auth } from "@/auth";
 
 import crypto from "crypto";
@@ -9,7 +8,6 @@ import { encrypt } from "@/lib/encryption";
 import { db } from "@/db";
 import { integrations } from "@/db/schema";
 import { handleGoogleDoc } from "@/lib/integrations/google/googleDoc";
-import { google } from "googleapis";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -58,7 +56,7 @@ export async function GET(request: NextRequest) {
         expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
         scope: tokens.scope ?? null,
         tokenType: tokens.token_type ?? null,
-        data: tokens as any,
+        data: tokens,
         isActive: true,
       })
       .returning();
@@ -71,22 +69,9 @@ export async function GET(request: NextRequest) {
       for (const file of files) {
         try {
           await handleGoogleDoc(file, oauth2Client, integrated.userId);
-        } catch (err: any) {
-          console.error(
-            `❌ Error processing file "${file.name}": ${err.message}`
-          );
+        } catch {
+          throw new Error(`❌ Error processing file "${file.name}"`);
         }
-      }
-
-      // ✅ Fetch Google Tasks
-      try {
-        const taskLists = await getGoogleTasks(oauth2Client);
-        console.log("📋 Synced Google Tasks:", taskLists);
-
-        // Optional: Store in DB
-        // await saveTasksToDatabase(taskLists, userId);
-      } catch (taskError: any) {
-        console.error("❌ Error fetching Google Tasks:", taskError.message);
       }
     }
 

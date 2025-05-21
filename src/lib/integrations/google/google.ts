@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 
-import { db } from "@/db";
+
 
 const credentials = {
   client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,

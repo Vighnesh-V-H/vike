@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   const { messages }: { messages: CoreMessage[] } = await req.json();
 
-  const userMessage = messages[messages.length - 1]?.content;
+
 
   const currentDate = new Date();
   const rfc3339Date = currentDate.toISOString();
@@ -55,7 +55,7 @@ Task Management:
         createGoogleTask: tool({
           description: `Create a Google Task for the user.`,
           parameters: googleTaskSchema,
-          execute: async ({ title, notes, due, taskListId }) => {
+          execute: async ({ title, notes, due }) => {
             try {
               const oauth2Client = await getOAuth2ClientForUser(user.id!);
               const result = await insertGoogleTask(oauth2Client, {
@@ -69,11 +69,8 @@ Task Management:
               }" created successfully with due date: ${
                 result.due ?? "no due date"
               }.`;
-            } catch (err: any) {
-              console.error("Failed to create task:", err);
-              return `❌ Failed to create task: ${
-                err.message || "Unknown error"
-              }`;
+            } catch {
+              return `❌ Failed to create task`;
             }
           },
         }),

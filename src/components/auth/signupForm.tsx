@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { useState, useTransition } from "react";
 import Authcard from "./authcard";
 import axios from "axios";
+import FormError from "./formError";
+import FormSuccess from "./formSuccess";
 
 function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -106,6 +108,9 @@ function SignupForm() {
                       {...field}
                       disabled={isPending}
                     />
+                    <FormError message={error} />
+                    <FormSuccess message={success} />
+
                     <Button
                       type='button'
                       variant='ghost'

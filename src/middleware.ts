@@ -10,7 +10,7 @@ import { NextResponse } from "next/server";
 
 const { auth } = NextAuth(authConfig);
 
-// @ts-expect-error
+
 export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
@@ -22,14 +22,14 @@ export default auth((req) => {
     if (isLoggedIn) {
       return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
     }
-    return null;
+    return undefined;
   }
 
   if (!isLoggedIn && !isPublicRoute) {
     return NextResponse.redirect(new URL(DEFAULT_LOGOUT_REDIRECT, nextUrl));
   }
 
-  return null;
+  return undefined;
 });
 
 export const config = {

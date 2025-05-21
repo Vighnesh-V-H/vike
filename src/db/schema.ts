@@ -12,7 +12,6 @@ import {
   vector,
   serial,
   varchar,
-  bigserial,
 } from "drizzle-orm/pg-core";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";

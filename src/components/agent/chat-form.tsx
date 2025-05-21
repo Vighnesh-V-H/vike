@@ -12,7 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AutoResizeTextarea } from "@/components/autoresize-textarea";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type Message = {
   id: string;
@@ -33,7 +33,6 @@ export function ChatForm({
   chatId,
   ...props
 }: ChatFormProps) {
-  const pathname = usePathname();
   let id: string | null;
   const router = useRouter();
 

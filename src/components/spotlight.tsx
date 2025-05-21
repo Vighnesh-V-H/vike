@@ -5,14 +5,8 @@ import { useState, useRef, useEffect } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useChat } from "@ai-sdk/react";
-import { useRouter } from "next/navigation";
 
-interface SpotlightSearchProps {
-  onClose: () => void;
-}
-
-export function SpotlightSearch({ onClose }: SpotlightSearchProps) {
-  const [query, setQuery] = useState("");
+export function SpotlightSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isTaskMode, setIsTaskMode] = useState(false);
 
@@ -23,9 +17,6 @@ export function SpotlightSearch({ onClose }: SpotlightSearchProps) {
     }
   }, []);
 
-  const router = useRouter();
-  let chatId: string | null = null;
-
   // Chat API handler
   const {
     messages: chatMessages,
@@ -35,9 +26,6 @@ export function SpotlightSearch({ onClose }: SpotlightSearchProps) {
     isLoading: isChatLoading,
   } = useChat({
     api: "/api/chat",
-    onResponse: (response) => {
-      chatId = response.headers.get("X-Chat-ID");
-    },
   });
 
   // Task API handler
@@ -48,11 +36,10 @@ export function SpotlightSearch({ onClose }: SpotlightSearchProps) {
     append: appendTask,
     isLoading: isTaskLoading,
   } = useChat({
-    api: "/api/google/tasks",
+    api: "/api/google/task",
     maxSteps: 1,
     onFinish: (res) => {
-      // @ts-expect-error
-      const toolResult = res.parts?.[0]?.result;
+      const toolResult = res.parts?.[0]?.type;
 
       if (!res.content && typeof toolResult === "string") {
         appendTask({

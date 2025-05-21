@@ -2,8 +2,6 @@
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
 import { Integration } from "@/lib/types";
 import AuthFlowButton from "./authFlowButton";
 
@@ -12,7 +10,7 @@ interface IntegrationCardProps {
 }
 
 export function IntegrationCard({ integration }: IntegrationCardProps) {
-  const { name, description, icon: Icon, redirectUrl, color } = integration;
+  const { name, description, icon: Icon } = integration;
 
   return (
     <Card

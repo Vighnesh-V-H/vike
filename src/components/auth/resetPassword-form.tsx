@@ -66,7 +66,7 @@ function ResetPasswordForm() {
           setError(response.data.error);
         }
       } catch (error) {
-        // @ts-expect-error
+        // @ts-expect-error response from backend
         setError(error.response.data.error);
       }
     });

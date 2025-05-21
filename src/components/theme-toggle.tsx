@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TooltipGlobal } from "./tooltip-global";
+
 
 export function ThemeToggle() {
   const { setTheme } = useTheme();

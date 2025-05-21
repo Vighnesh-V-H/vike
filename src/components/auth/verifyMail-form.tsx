@@ -38,11 +38,11 @@ function VerifyMailForm() {
 
       return response;
     } catch (error) {
-      // @ts-expect-error
+      // @ts-expect-error error i sent by backend if ther is any
       setError(error?.response?.data?.error);
       return;
     }
-  }, [token]);
+  }, [token, error, router, success]);
 
   useEffect(() => {
     onSubmit();

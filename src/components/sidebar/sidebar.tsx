@@ -2,24 +2,19 @@
 
 import * as React from "react";
 import { NavMain } from "./sidebar-options";
-import { NavUser } from "../nav-user";
+
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   SidebarRail,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useSidebar } from "@/components/ui/sidebar";
+
 import { sideBarOptions } from "@/lib/constants";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { toggleSidebar } = useSidebar();
-
   return (
     <Sidebar collapsible='icon' {...props}>
       <SidebarHeader className='border-b dark:bg-black bg-white flex gap-2 relative'>

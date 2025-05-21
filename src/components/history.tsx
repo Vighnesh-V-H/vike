@@ -1,8 +1,6 @@
-"use client";
-
 import { Clock, Loader2 } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useRef } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
 import {
@@ -17,13 +15,11 @@ async function fetchHistory() {
     throw new Error("Failed to fetch history");
   }
   const data = await response.json();
-  console.log("Raw API response:", data);
   return data;
 }
 
 export function History() {
   const historyContainerRef = useRef<HTMLDivElement | null>(null);
-  const queryClient = useQueryClient();
 
   const {
     data,
@@ -32,17 +28,14 @@ export function History() {
     isFetchingNextPage,
     isLoading,
     error,
-    refetch,
   } = useInfiniteQuery({
     queryKey: ["history"],
-    queryFn: ({ pageParam }) => fetchHistory(),
+    queryFn: () => fetchHistory(),
     initialPageParam: null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    enabled: true,
+    refetchInterval: 5000, // Built-in polling every 5 seconds
     staleTime: 0,
   });
-
-  console.log("History data structure:", data);
 
   const historyItems =
     data?.pages.flatMap((page) => {
@@ -56,16 +49,7 @@ export function History() {
       return [];
     }) || [];
 
-  useEffect(() => {
-    const currentRef = historyContainerRef.current;
-    if (currentRef) {
-      currentRef.addEventListener("scroll", handleScroll);
-      return () => {
-        currentRef.removeEventListener("scroll", handleScroll);
-      };
-    }
-  }, [hasNextPage, isFetchingNextPage]);
-
+  // Simple scroll handler for infinite loading
   const handleScroll = () => {
     if (!historyContainerRef.current) return;
 
@@ -79,63 +63,10 @@ export function History() {
     }
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      queryClient.invalidateQueries({ queryKey: ["history"] });
-    }, 5000);
-    const setupWebSocketListener = () => {
-      try {
-        const ws = new WebSocket(
-          `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${
-            window.location.host
-          }/api/history-updates`
-        );
-
-        ws.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          if (data.type === "history-update") {
-            queryClient.invalidateQueries({ queryKey: ["history"] });
-          }
-        };
-
-        ws.onclose = () => {
-          setTimeout(setupWebSocketListener, 2000);
-        };
-
-        return ws;
-      } catch (err) {
-        console.error(
-          "WebSocket connection failed, falling back to polling",
-          err
-        );
-        return null;
-      }
-    };
-
-    // Try WebSocket first, fall back to polling
-    const ws = setupWebSocketListener();
-
-    return () => {
-      clearInterval(interval);
-      if (ws) ws.close();
-    };
-  }, [queryClient]);
-
-  useEffect(() => {
-    const handleNewMessage = () => {
-      queryClient.invalidateQueries({ queryKey: ["history"] });
-    };
-
-    window.addEventListener("chat:new-message", handleNewMessage);
-
-    return () => {
-      window.removeEventListener("chat:new-message", handleNewMessage);
-    };
-  }, [queryClient]);
-
   return (
     <div
       ref={historyContainerRef}
+      onScroll={handleScroll}
       className='max-h-[300px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-sidebar-border scrollbar-track-transparent'>
       <SidebarMenuSub>
         {isLoading ? (

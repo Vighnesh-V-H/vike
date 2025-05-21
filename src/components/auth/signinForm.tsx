@@ -46,11 +46,9 @@ function SigninForm() {
         const response = await axios.post("/api/signin", values);
         console.log(response.data);
         if (response.status === 200) {
-          router.push("/dashboard");
+          router.push("/integrations");
         }
-        if (response.status === 201) {
-          response.data.success ? setSuccess(response.data.success) : null;
-        }
+    
 
         if (response.data.error) {
           setError(response.data.error);
