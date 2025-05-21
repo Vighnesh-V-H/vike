@@ -7,7 +7,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipGlobal } from "@/components/tooltip-global";
 import Path from "@/components/path";
 import { SpotlightProvider } from "@/providers/modal-provider";
@@ -15,12 +14,12 @@ import { SpotlightProvider } from "@/providers/modal-provider";
 function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SpotlightProvider>
-      <div className='h-screen bg-black flex overflow-x-hidden'>
+      <div className='h-screen  flex overflow-x-hidden'>
         <SidebarProvider>
           <AppSidebar />
 
           <SidebarInset>
-            <header className='flex justify-between  h-14 shrink-0 dark:bg-black border-b-[1px] sticky top-0 dark:border-white border-black dark:text-white items-center '>
+            <header className='flex justify-between  h-14 shrink-0  border-b-[1px] sticky top-0 dark:border-white border-black dark:text-white items-center '>
               <div className='flex items-center gap-2 px-4'>
                 <TooltipGlobal content='toggle sidebar'>
                   <SidebarTrigger className='-ml-1' />
@@ -39,7 +38,7 @@ function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </header>
             <main
-              className={`flex-1 dark:bg-black max-h-[92%] dark:text-white`}>
+              className={`flex-1 dark:bg-[#0f1011] max-h-[92%] dark:text-white`}>
               {children}
             </main>
           </SidebarInset>

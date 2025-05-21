@@ -11,15 +11,10 @@ interface SpotlightSearchProps {
   onClose: () => void;
 }
 
-interface ChatResponse {
-  message: string;
-}
-
 export function SpotlightSearch({ onClose }: SpotlightSearchProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [isTaskMode, setIsTaskMode] = useState(false);
 
   useEffect(() => {
     // Focus the input when the component mounts
@@ -31,19 +26,36 @@ export function SpotlightSearch({ onClose }: SpotlightSearchProps) {
   const router = useRouter();
   let chatId: string | null = null;
 
-  const { messages, input, setInput, append, isLoading } = useChat({
+  // Chat API handler
+  const {
+    messages: chatMessages,
+    input: chatInput,
+    setInput: setChatInput,
+    append: appendChat,
+    isLoading: isChatLoading,
+  } = useChat({
     api: "/api/chat",
-    maxSteps: 1,
-
     onResponse: (response) => {
       chatId = response.headers.get("X-Chat-ID");
     },
+  });
+
+  // Task API handler
+  const {
+    messages: taskMessages,
+    input: taskInput,
+    setInput: setTaskInput,
+    append: appendTask,
+    isLoading: isTaskLoading,
+  } = useChat({
+    api: "/api/google/tasks",
+    maxSteps: 1,
     onFinish: (res) => {
       // @ts-expect-error
-      const toolResult = res.toolInvocations?.[0]?.result;
+      const toolResult = res.parts?.[0]?.result;
 
       if (!res.content && typeof toolResult === "string") {
-        append({
+        appendTask({
           role: "assistant",
           content: toolResult,
         });
@@ -51,12 +63,36 @@ export function SpotlightSearch({ onClose }: SpotlightSearchProps) {
     },
   });
 
+  // Combined messages and loading state for rendering
+  const messages = isTaskMode ? taskMessages : chatMessages;
+  const isLoading = isTaskMode ? isTaskLoading : isChatLoading;
+
+  // Combined input state management
+  const input = isTaskMode ? taskInput : chatInput;
+  const setInput = (value: string) => {
+    // When input changes, detect if it's a task or regular chat
+    const newIsTaskMode = value.trim().toLowerCase().startsWith("t:");
+    setIsTaskMode(newIsTaskMode);
+
+    // Update the appropriate input state
+    if (newIsTaskMode) {
+      setTaskInput(value);
+    } else {
+      setChatInput(value);
+    }
+  };
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!input.trim()) return;
 
-    await append({ content: input, role: "user" });
+    // Route to appropriate API based on whether input starts with "t:"
+    if (isTaskMode) {
+      await appendTask({ content: input, role: "user" });
+    } else {
+      await appendChat({ content: input, role: "user" });
+    }
   };
 
   return (
@@ -67,7 +103,11 @@ export function SpotlightSearch({ onClose }: SpotlightSearchProps) {
           <Input
             ref={inputRef}
             type='text'
-            placeholder='Search anything...'
+            placeholder={
+              isTaskMode
+                ? "Create a task... (t: prefix detected)"
+                : "Search anything... (use t: prefix for tasks)"
+            }
             className='flex-1 border-none shadow-none focus-visible:ring-0 bg-transparent text-base dark:text-gray-200 dark:placeholder:text-gray-400'
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -93,14 +133,14 @@ export function SpotlightSearch({ onClose }: SpotlightSearchProps) {
               <div className='flex items-center py-2'>
                 <Loader2 className='h-4 w-4 text-gray-400 animate-spin mr-2' />
                 <span className='text-sm text-gray-500 dark:text-gray-400'>
-                  Thinking...
+                  {isTaskMode ? "Creating task..." : "Thinking..."}
                 </span>
               </div>
             )}
           </div>
         ) : (
           <div className='text-sm text-gray-500 dark:text-gray-400 text-center py-8'>
-            Type your query and press Enter
+            Type your query and press Enter, start with t: to add a task
           </div>
         )}
       </div>

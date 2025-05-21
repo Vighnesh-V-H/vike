@@ -11,7 +11,7 @@ function AuthFlowButton({ name }: { name: string }) {
     case "google":
       return <GoogleAuthButton />;
     default:
-      return <div>hi</div>;
+      return <div>Coming Soon</div>;
   }
 }
 

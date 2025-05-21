@@ -1,4 +1,4 @@
-import { type CoreMessage, streamText, tool } from "ai";
+import { type CoreMessage, streamText } from "ai";
 import { google } from "@ai-sdk/google";
 import { auth } from "@/auth";
 import { db } from "@/db";
@@ -6,10 +6,6 @@ import { chatHistory, chatMessages, documents, chunk } from "@/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { createEmbedding } from "@/lib/embedding";
 import { StreamData } from "ai";
-import { googleTaskSchema } from "@/lib/schema";
-import { getOAuth2ClientForUser } from "@/lib/integrations/google/getOauth";
-import { insertGoogleTask } from "@/lib/integrations/google/insertTask";
-import { z } from "zod";
 import { format } from "date-fns";
 
 export async function POST(req: Request) {
@@ -43,9 +39,7 @@ export async function POST(req: Request) {
   }[] = [];
 
   const currentDate = new Date();
-  const rfc3339Date = currentDate.toISOString();
   const readableDate = format(currentDate, "EEEE, MMMM d, yyyy");
-  const dateOnly = format(currentDate, "yyyy-MM-dd");
 
   try {
     // Create or validate chat history
@@ -55,7 +49,6 @@ export async function POST(req: Request) {
         .insert(chatHistory)
         .values({ userId: session.user.id, title })
         .returning({ id: chatHistory.id });
-      console.log("curr -r", currentChatId);
       currentChatId = newChat.id;
     }
 
@@ -120,9 +113,9 @@ export async function POST(req: Request) {
       }
     }
 
-    context += matchingChunks[0].text;
-
-    console.log(context);
+    if (matchingChunks.length > 0) {
+      context += matchingChunks[0].text;
+    }
 
     // System prompt with context
     const systemPrompt = `You are Vike AI, a knowledgeable assistant for personal knowledge management. 
@@ -134,58 +127,19 @@ Guidelines:
 1. Be concise but thorough
 2. Never refer sources naturally when using context
 3. Use markdown for formatting
-4. If unsure, say :There's no clear data about this topic
+4. If unsure, say: There's no clear data about this topic
 5. Focus on user's own knowledge base
 
 CURRENT DATE INFORMATION:
-- Current Date (RFC3339): ${rfc3339Date}
 - Current Date (Human-readable): ${readableDate}
-- Date Only: ${dateOnly}
 
-Task Management:
-- If the user's message starts with "t:" or clearly implies creating a task, use the createGoogleTask tool
-- Use the current date information above as your reference point for calculating due dates
-- Convert relative dates like "tomorrow" or "next week" to proper RFC3339 format based on the current date above
-- For "tomorrow", add 1 day to the current date
-- For "next week", add 7 days to the current date
-- For "this weekend", calculate the upcoming Saturday from current date
-`;
+Note: If the user's message appears to be requesting task creation, kindly inform them that task management has been moved to a separate feature that they can access directly.`;
 
     // Stream the AI response
     const result = streamText({
       model: google("gemini-1.5-flash"),
       system: systemPrompt,
-
       messages,
-      tools: {
-        createGoogleTask: tool({
-          description: `Create a Google Task for the user.`,
-          parameters: googleTaskSchema,
-
-          execute: async ({ title, notes, due, taskListId }) => {
-            try {
-              const oauth2Client = await getOAuth2ClientForUser(user.id!);
-              const result = await insertGoogleTask(oauth2Client, {
-                title,
-                notes: notes || "",
-                due,
-              });
-
-              return `✅ Task "${
-                result.title
-              }" created successfully with due date: ${
-                result.due ?? "no due date"
-              }.`;
-            } catch (err: any) {
-              console.error("Failed to create task:", err);
-              return `❌ Failed to create task: ${
-                err.message || "Unknown error"
-              }`;
-            }
-          },
-        }),
-      },
-
       onFinish: async (completion) => {
         try {
           // Store cleaned response
@@ -200,10 +154,6 @@ Task Management:
               role: "assistant",
               content: cleanContent,
             });
-          }
-
-          if (completion.toolResults) {
-            data.append(completion.toolResults[0].result);
           }
 
           // Append context as annotation

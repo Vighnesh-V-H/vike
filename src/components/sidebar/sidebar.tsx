@@ -1,15 +1,6 @@
 "use client";
 
 import * as React from "react";
-import {
-  BookOpen,
-  Bot,
-  Command,
-  Settings2,
-  SquareTerminal,
-  ChevronLeft,
-} from "lucide-react";
-
 import { NavMain } from "./sidebar-options";
 import { NavUser } from "../nav-user";
 import {
@@ -23,7 +14,6 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-// import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { sideBarOptions } from "@/lib/constants";
 
@@ -32,12 +22,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible='icon' {...props}>
-      <SidebarHeader className='border-b bg-black flex gap-2 relative'>
-        <SidebarMenu className='bg-black text-white h-10 relative z-10'>
+      <SidebarHeader className='border-b dark:bg-black bg-white flex gap-2 relative'>
+        <SidebarMenu className='dark:bg-black bg-white text-white h-10 relative z-10'>
           Vike
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent className='bg-black  relative overflow-hidden'>
+      <SidebarContent className='dark:bg-black bg-[#d9d9d9] relative overflow-hidden'>
         <NavMain items={sideBarOptions.navMain} />
       </SidebarContent>
       <SidebarFooter className='border-t bg-black relative'></SidebarFooter>
