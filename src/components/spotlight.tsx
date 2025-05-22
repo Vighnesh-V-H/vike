@@ -28,7 +28,6 @@ export function SpotlightSearch() {
     api: "/api/chat",
   });
 
-  // Task API handler
   const {
     messages: taskMessages,
     input: taskInput,
@@ -50,14 +49,11 @@ export function SpotlightSearch() {
     },
   });
 
-  // Combined messages and loading state for rendering
   const messages = isTaskMode ? taskMessages : chatMessages;
   const isLoading = isTaskMode ? isTaskLoading : isChatLoading;
 
-  // Combined input state management
   const input = isTaskMode ? taskInput : chatInput;
   const setInput = (value: string) => {
-    // When input changes, detect if it's a task or regular chat
     const newIsTaskMode = value.trim().toLowerCase().startsWith("t:");
     setIsTaskMode(newIsTaskMode);
 
