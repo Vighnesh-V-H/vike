@@ -48,7 +48,7 @@ export function SpotlightProvider({ children }: { children: React.ReactNode }) {
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTitle className='hidden'>Spotlight</DialogTitle>
         <DialogContent className='sm:max-w-[640px] p-0 gap-0 border border-gray-200 dark:border-gray-800 shadow-xl bg-white/80 dark:bg-[#171717d6] backdrop-blur-md'>
-          <SpotlightSearch onClose={closeSpotlight} />
+          <SpotlightSearch />
         </DialogContent>
       </Dialog>
     </SpotlightContext.Provider>

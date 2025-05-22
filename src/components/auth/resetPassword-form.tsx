@@ -18,7 +18,7 @@ import { Button } from "../ui/button";
 
 import Authcard from "@/components/auth/authcard";
 
-import { useState, useTransition } from "react";
+import { Suspense, useState, useTransition } from "react";
 
 import FormSuccess from "@/components/auth/formSuccess";
 
@@ -26,7 +26,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import FormError from "@/components/auth/formError";
 import axios from "axios";
 
-function ResetPasswordForm() {
+function ResetPasswordFormContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -35,16 +35,26 @@ function ResetPasswordForm() {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  if (!token) {
-    setError("Token not found");
-  }
-
   const form = useForm<z.infer<typeof newPasswordSchema>>({
     resolver: zodResolver(newPasswordSchema),
     defaultValues: {
       password: "",
     },
   });
+
+  // Handle token validation
+  if (!token) {
+    return (
+      <Authcard
+        header='Reset Your Password'
+        footertext='Login'
+        footerlink='/signin'>
+        <CardContent>
+          <FormError message='Token not found' />
+        </CardContent>
+      </Authcard>
+    );
+  }
 
   function onSubmit(values: z.infer<typeof newPasswordSchema>) {
     setError("");
@@ -110,8 +120,23 @@ function ResetPasswordForm() {
               disabled={isPending}>
               {isPending ? (
                 <svg
-                  className='animate-spin h-5 w-5 mr-3 text-white bg-white'
-                  viewBox='456 45 54 0'></svg>
+                  className='animate-spin h-5 w-5 mr-3 text-white'
+                  viewBox='0 0 24 24'>
+                  <circle
+                    className='opacity-25'
+                    cx='12'
+                    cy='12'
+                    r='10'
+                    stroke='currentColor'
+                    strokeWidth='4'
+                    fill='none'
+                  />
+                  <path
+                    className='opacity-75'
+                    fill='currentColor'
+                    d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                  />
+                </svg>
               ) : (
                 "Reset Password"
               )}
@@ -120,6 +145,43 @@ function ResetPasswordForm() {
         </Form>
       </CardContent>
     </Authcard>
+  );
+}
+
+function ResetPasswordForm() {
+  return (
+    <Suspense
+      fallback={
+        <Authcard
+          header='Reset Your Password'
+          footertext='Login'
+          footerlink='/signin'>
+          <CardContent>
+            <div className='flex justify-center items-center py-8'>
+              <svg
+                className='animate-spin h-8 w-8 text-gray-600'
+                viewBox='0 0 24 24'>
+                <circle
+                  className='opacity-25'
+                  cx='12'
+                  cy='12'
+                  r='10'
+                  stroke='currentColor'
+                  strokeWidth='4'
+                  fill='none'
+                />
+                <path
+                  className='opacity-75'
+                  fill='currentColor'
+                  d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
+                />
+              </svg>
+            </div>
+          </CardContent>
+        </Authcard>
+      }>
+      <ResetPasswordFormContent />
+    </Suspense>
   );
 }
 
