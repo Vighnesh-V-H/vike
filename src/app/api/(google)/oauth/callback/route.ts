@@ -77,9 +77,8 @@ export async function GET(request: NextRequest) {
 
     await setIntegrationCookie(integrationId);
     return NextResponse.redirect(new URL("/integrations", request.url));
-  } catch (error: any) {
-    console.error("OAuth callback error:", error);
-    const errorMessage = error?.message || "OAuth callback failed";
+  } catch {
+    const errorMessage = "OAuth callback failed";
     return NextResponse.redirect(
       new URL(`/error?message=${encodeURIComponent(errorMessage)}`, request.url)
     );

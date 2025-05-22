@@ -48,14 +48,14 @@ function SigninForm() {
         if (response.status === 200) {
           router.push("/integrations");
         }
-    
 
         if (response.data.error) {
           setError(response.data.error);
         }
 
         return response.data;
-      } catch (error: any) {
+      } catch (error) {
+        // @ts-expect-error error comes from backend
         setError(error.response?.data?.error);
       }
     });

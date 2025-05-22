@@ -93,7 +93,6 @@ Task Management:
       data,
     });
   } catch (error) {
-    console.error("Task creation error:", error);
     return new Response(
       JSON.stringify({ error: "Task creation process failed" }),
       {

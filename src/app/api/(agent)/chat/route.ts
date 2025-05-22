@@ -21,7 +21,10 @@ export async function POST(req: Request) {
   const user = session.user;
 
   if (!user || !user.id) {
-    return { error: "Unauthorized" };
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const { messages, id }: { messages: CoreMessage[]; id?: string } =
@@ -180,9 +183,9 @@ Note: If the user's message appears to be requesting task creation, kindly infor
       data,
     });
   } catch (error) {
-    console.error("Chat error:", error);
     return new Response(JSON.stringify({ error: "Chat processing failed" }), {
       status: 500,
+      headers: { "Content-Type": "application/json" },
     });
   }
 }
