@@ -1,7 +1,8 @@
 import { google } from "googleapis";
 
+type OAuth2Client = typeof google.prototype.auth.OAuth2.prototype;
 
-export async function getGoogleTasks(oauth2Client: any) {
+export async function getGoogleTasks(oauth2Client: OAuth2Client) {
   const tasksApi = google.tasks({ version: "v1", auth: oauth2Client });
 
   const taskListsRes = await tasksApi.tasklists.list();

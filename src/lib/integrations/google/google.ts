@@ -32,7 +32,9 @@ export function getScopes() {
   ];
 }
 
-export async function getDocs(oauth2Client: any) {
+type OAuth2Client = typeof google.prototype.auth.OAuth2.prototype;
+
+export async function getDocs(oauth2Client: OAuth2Client) {
   const drive = google.drive({ version: "v3", auth: oauth2Client });
 
   const res = await drive.files.list({

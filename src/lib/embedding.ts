@@ -16,7 +16,7 @@ declare global {
   var embeddingQueue: Array<{
     text: string;
     resolve: (value: number[]) => void;
-    reject: (reason?: any) => void;
+    reject: (reason?: unknown) => void;
   }>;
   var isProcessing: boolean;
   var requestCount: number;

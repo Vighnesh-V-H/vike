@@ -1,7 +1,9 @@
 import { google } from "googleapis";
 
+type OAuth2Client = typeof google.prototype.auth.OAuth2.prototype;
+
 export async function insertGoogleTask(
-  oauth2Client: typeof google.auth,
+  oauth2Client: OAuth2Client,
 
   task: { title: string; notes: string | null; due?: string }
 ) {

@@ -1,14 +1,20 @@
 import crypto from "crypto";
-import { google } from "googleapis";
+import { google, GoogleApis } from "googleapis";
 import { db } from "@/db";
 import { documents } from "@/db/schema";
 import { documentQueue } from "@/lib/queue";
 import { startWorker } from "@/lib/workers";
 import { eq } from "drizzle-orm";
 
+import { drive_v3 } from "googleapis";
+
+type DriveFile = drive_v3.Schema$File;
+
+type OAuth2Client = typeof google.prototype.auth.OAuth2.prototype;
+
 export async function handleGoogleDoc(
-  file: any,
-  oauth2Client: any,
+  file: DriveFile,
+  oauth2Client: OAuth2Client,
   userId: string
 ) {
   const drive = google.drive({ version: "v3", auth: oauth2Client });
@@ -38,7 +44,7 @@ export async function handleGoogleDoc(
     { responseType: "stream" }
   );
 
-  const chunks: any[] = [];
+  const chunks: Uint8Array<ArrayBufferLike>[] = [];
   exportRes.data.on("data", (chunk) => chunks.push(chunk));
   await new Promise((resolve) => exportRes.data.on("end", resolve));
   const content = Buffer.concat(chunks).toString("utf-8");
@@ -66,8 +72,9 @@ export async function handleGoogleDoc(
   const [document] = await db
     .insert(documents)
     .values({
+      // @ts-expect-error valid source  type
       sourceType: "google_docs",
-      sourceId: file.id!,
+      sourceId: file.id,
       title: file.name,
       fileName: file.name,
       mimeType: file.mimeType!,

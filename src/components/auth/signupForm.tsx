@@ -44,8 +44,9 @@ function SignupForm() {
       try {
         const response = await axios.post("/api/signup", values);
         return response.data;
-      } catch (error: any) {
+      } catch (error) {
         return {
+           // @ts-expect-error error comes from backend
           error: error.response?.data?.error || "Something went wrong",
         };
       }
