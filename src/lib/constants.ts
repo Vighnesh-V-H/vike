@@ -1,27 +1,13 @@
 import {
   BookOpen,
-  Bot,
   BotIcon,
   LayoutDashboardIcon,
-  LineChart,
   Mail,
-  MessageSquare,
   Settings,
-  Settings2,
-  Shield,
-  Sparkles,
-  SquareTerminal,
-  Target,
-  Users,
   Workflow,
-  Zap,
   Github,
   Twitter,
   Slack,
-  Database,
-  Cloud,
-  CreditCard,
-  BarChart,
   FileText,
   HardDrive,
 } from "lucide-react";
@@ -362,4 +348,4 @@ export const integrations: Integration[] = [
 
 
 export const scopes =
-  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/documents.readonly";
+  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file  https://www.googleapis.com/auth/tasks";

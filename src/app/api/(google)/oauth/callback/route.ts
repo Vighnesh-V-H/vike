@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDocs, getOAuth2Client } from "@/lib/integrations/google";
+import { getDocs, getOAuth2Client } from "@/lib/integrations/google/google";
 import { auth } from "@/auth";
 
 import crypto from "crypto";
 import { setIntegrationCookie } from "@/lib/cookies";
-import { encrypt } from "@/lib/encryption"; // Create this utility for sensitive data
+import { encrypt } from "@/lib/encryption";
 import { db } from "@/db";
 import { integrations } from "@/db/schema";
+import { handleGoogleDoc } from "@/lib/integrations/google/googleDoc";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -39,32 +40,42 @@ export async function GET(request: NextRequest) {
     const { tokens } = await oauth2Client.getToken(code);
 
     const integrationId = crypto.randomUUID();
-
     const encryptedRefreshToken = tokens.refresh_token
       ? await encrypt(tokens.refresh_token)
       : null;
 
+    const [integrated] = await db
+      .insert(integrations)
+      .values({
+        id: integrationId,
+        userId,
+        type: "google",
+        name: "google_oauth",
+        accessToken: tokens.access_token ?? null,
+        refreshToken: encryptedRefreshToken,
+        expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+        scope: tokens.scope ?? null,
+        tokenType: tokens.token_type ?? null,
+        data: tokens,
+        isActive: true,
+      })
+      .returning();
+
     if (tokens.refresh_token) {
       oauth2Client.setCredentials({ refresh_token: tokens.refresh_token });
-      getDocs(oauth2Client);
+
+      // ✅ Process Google Docs
+      const files = await getDocs(oauth2Client);
+      for (const file of files) {
+        try {
+          await handleGoogleDoc(file, oauth2Client, integrated.userId);
+        } catch {
+          throw new Error(`❌ Error processing file "${file.name}"`);
+        }
+      }
     }
 
-    await db.insert(integrations).values({
-      id: integrationId,
-      userId,
-      type: "google",
-      name: "google_oauth",
-      accessToken: tokens.access_token ?? null,
-      refreshToken: encryptedRefreshToken, // Store encrypted token
-      expiresAt: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
-      scope: tokens.scope ?? null,
-      tokenType: tokens.token_type ?? null,
-      data: tokens as any, // Consider encrypting or removing sensitive parts
-      isActive: true,
-    });
-
     await setIntegrationCookie(integrationId);
-
     return NextResponse.redirect(new URL("/integrations", request.url));
   } catch (error: any) {
     console.error("OAuth callback error:", error);

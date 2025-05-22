@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { encrypt } from "@/lib/encryption";
+
 import { db } from "@/db";
 import { integrations } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";

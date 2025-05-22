@@ -6,7 +6,7 @@ import Credentials from "next-auth/providers/credentials";
 import type { NextAuthConfig } from "next-auth";
 import { SignInSchema } from "./lib/schema";
 import { getUserByEmail } from "./lib/userQueries";
-import { compare, hash } from "bcryptjs";
+import { compare } from "bcryptjs";
 
 export default {
   providers: [
@@ -19,7 +19,6 @@ export default {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
     Credentials({
-      // @ts-ignore
       async authorize(credentials) {
         const validateFields = SignInSchema.safeParse(credentials);
 
@@ -33,9 +32,9 @@ export default {
           const passwordsMatch = await compare(password, user.password);
 
           if (passwordsMatch) return user;
-
-          return null;
         }
+
+        return null;
       },
     }),
   ],

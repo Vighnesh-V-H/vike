@@ -14,7 +14,7 @@ export async function GET() {
     const chatHistory = await getChatHistoryWithMessages(userId);
 
     return NextResponse.json(chatHistory);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to retrieve chat history" },
       { status: 500 }

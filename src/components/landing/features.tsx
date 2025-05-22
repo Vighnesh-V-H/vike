@@ -1,6 +1,7 @@
 import type React from "react";
 import * as LucideIcons from "lucide-react";
 import { features } from "@/lib/constants";
+import Image from "next/image";
 
 export default function Features() {
   return (
@@ -52,7 +53,7 @@ export default function Features() {
                     </p>
                     {feature.image && (
                       <div className='mt-6 bg-background dark:bg-muted/20 rounded-lg p-4 border'>
-                        <img
+                        <Image
                           src={feature.image.src || "/placeholder.svg"}
                           alt={feature.image.alt}
                           className='w-full h-auto rounded-md'
@@ -75,7 +76,7 @@ export default function Features() {
                     </div>
                     {feature.image && (
                       <div className='flex-1'>
-                        <img
+                        <Image
                           src={feature.image.src || "/placeholder.svg"}
                           alt={feature.image.alt}
                           className='w-full h-auto rounded-lg border'

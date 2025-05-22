@@ -1,7 +1,5 @@
-"use client";
-
 import { Clock, Loader2 } from "lucide-react";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
@@ -11,17 +9,17 @@ import {
   SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 
-
 async function fetchHistory() {
   const response = await fetch(`/api/fetch-history`);
   if (!response.ok) {
     throw new Error("Failed to fetch history");
   }
-  return response.json();
+  const data = await response.json();
+  return data;
 }
 
 export function History() {
-  const historyContainerRef = useRef<HTMLDivElement>(null);
+  const historyContainerRef = useRef<HTMLDivElement | null>(null);
 
   const {
     data,
@@ -32,24 +30,26 @@ export function History() {
     error,
   } = useInfiniteQuery({
     queryKey: ["history"],
-    queryFn: ({ pageParam }) => fetchHistory(),
-    initialPageParam: null as string | null,
+    queryFn: () => fetchHistory(),
+    initialPageParam: null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    enabled: true,
+    refetchInterval: 5000, // Built-in polling every 5 seconds
+    staleTime: 0,
   });
 
-  const historyItems = data?.pages.flat() || [];
+  const historyItems =
+    data?.pages.flatMap((page) => {
+      if (Array.isArray(page)) {
+        return page;
+      } else if (page?.items && Array.isArray(page.items)) {
+        return page.items;
+      } else if (page && typeof page === "object") {
+        return [page];
+      }
+      return [];
+    }) || [];
 
-  useEffect(() => {
-    const currentRef = historyContainerRef.current;
-    if (currentRef) {
-      currentRef.addEventListener("scroll", handleScroll);
-      return () => {
-        currentRef.removeEventListener("scroll", handleScroll);
-      };
-    }
-  }, [hasNextPage, isFetchingNextPage]);
-
+  // Simple scroll handler for infinite loading
   const handleScroll = () => {
     if (!historyContainerRef.current) return;
 
@@ -66,6 +66,7 @@ export function History() {
   return (
     <div
       ref={historyContainerRef}
+      onScroll={handleScroll}
       className='max-h-[300px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-sidebar-border scrollbar-track-transparent'>
       <SidebarMenuSub>
         {isLoading ? (

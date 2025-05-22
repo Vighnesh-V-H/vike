@@ -11,7 +11,7 @@ export default function Pricing() {
             Simple, Transparent Pricing
           </h2>
           <p className='mt-4 text-xl text-muted-foreground max-w-[700px] mx-auto'>
-            Choose the plan that's right for your business
+            Choose the plan that is right for your business
           </p>
         </div>
 

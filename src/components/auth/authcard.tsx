@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "../ui/card";
 import { ReactNode } from "react";
+import AuthProviders from "./auth-providers";
 
 interface AuthCard {
   header: string;
@@ -17,11 +18,15 @@ interface AuthCard {
 
 function Authcard({ header, footertext, footerlink, children }: AuthCard) {
   return (
-    <Card className='dark:bg-[#171717] bg-white'>
+    <Card className='dark:bg-[#171717] bg-white sm:w-[400px] '>
       <CardHeader>
         <CardTitle>{header} </CardTitle>
       </CardHeader>
       <CardContent>{children}</CardContent>
+
+      <CardFooter className=' ml-5 w-1/2'>
+        <AuthProviders />
+      </CardFooter>
 
       <CardFooter>
         <Link href={footerlink || ""} className='hover:opacity-100 opacity-70'>

@@ -1,6 +1,6 @@
 {
-  "id": "2e611bad-e911-427b-9779-b2bcd7f408c8",
-  "prevId": "ec9181f6-6343-473c-85e6-555c10605900",
+  "id": "596abf9a-60d3-465b-878e-c35f8df8a635",
+  "prevId": "2e611bad-e911-427b-9779-b2bcd7f408c8",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -542,7 +542,7 @@
         },
         "source_type": {
           "name": "source_type",
-          "type": "varchar(50)",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -574,7 +574,7 @@
           "name": "content",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "processing_status": {
           "name": "processing_status",

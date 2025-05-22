@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { testimonials } from "@/lib/constants";
 import { QuoteIcon } from "lucide-react";
+import Image from "next/image";
 
 export default function Testimonials() {
   return (
@@ -25,7 +26,7 @@ export default function Testimonials() {
                   {testimonial.author.image && (
                     <div className='mr-4'>
                       <div className='h-12 w-12 rounded-full overflow-hidden'>
-                        <img
+                        <Image
                           src={testimonial.author.image || "/placeholder.svg"}
                           alt={testimonial.author.name}
                           className='h-full w-full object-cover'

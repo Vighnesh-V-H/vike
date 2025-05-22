@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 export default function Hero() {
   return (
@@ -42,7 +43,7 @@ export default function Hero() {
           <div className='mx-auto lg:ml-auto flex items-center justify-center'>
             <div className='relative w-full max-w-[500px] aspect-video rounded-xl bg-gradient-to-br from-primary/20 to-primary/40 p-1'>
               <div className='absolute inset-0 rounded-lg overflow-hidden'>
-                <img
+                <Image
                   src='/placeholder.svg?height=500&width=800'
                   alt='AI CRM Dashboard'
                   className='w-full h-full object-cover'

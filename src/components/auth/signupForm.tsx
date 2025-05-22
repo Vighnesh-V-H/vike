@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { useState, useTransition } from "react";
 import Authcard from "./authcard";
 import axios from "axios";
+import FormError from "./formError";
+import FormSuccess from "./formSuccess";
 
 function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +58,7 @@ function SignupForm() {
       footerlink='/signin'
       footertext='Sign In'>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-3'>
           <FormField
             control={form.control}
             name='name'
@@ -106,6 +108,9 @@ function SignupForm() {
                       {...field}
                       disabled={isPending}
                     />
+                    <FormError message={error} />
+                    <FormSuccess message={success} />
+
                     <Button
                       type='button'
                       variant='ghost'
