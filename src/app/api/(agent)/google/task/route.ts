@@ -20,12 +20,13 @@ export async function POST(req: Request) {
   const user = session.user;
 
   if (!user || !user.id) {
-    return { error: "Unauthorized" };
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const { messages }: { messages: CoreMessage[] } = await req.json();
-
-
 
   const currentDate = new Date();
   const rfc3339Date = currentDate.toISOString();
@@ -97,6 +98,7 @@ Task Management:
       JSON.stringify({ error: "Task creation process failed" }),
       {
         status: 500,
+        headers: { "Content-Type": "application/json" },
       }
     );
   }

@@ -26,10 +26,10 @@ function VerifyMailForm() {
       const response = await axios.post(`api/verify-mail`, { token });
 
       if (response.data.success) {
-        setSuccess(success);
+        setSuccess(response.data.success);
       }
       if (response.data.error) {
-        setError(error);
+        setError(response.data.error);
       }
 
       if (response.status === 200) {
@@ -38,11 +38,11 @@ function VerifyMailForm() {
 
       return response;
     } catch (error) {
-      // @ts-expect-error error i sent by backend if ther is any
+      // @ts-expect-error backend response
       setError(error?.response?.data?.error);
       return;
     }
-  }, [token, error, router, success]);
+  }, [token, router]);
 
   useEffect(() => {
     onSubmit();
@@ -52,7 +52,6 @@ function VerifyMailForm() {
     <Authcard header='Verifying mail please wait..'>
       <div className='w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin'></div>
       <CardFooter>
-        {" "}
         <FormError message={error} />
         <FormSuccess message={success} />
       </CardFooter>

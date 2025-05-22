@@ -11,13 +11,12 @@ export function SpotlightSearch() {
   const [isTaskMode, setIsTaskMode] = useState(false);
 
   useEffect(() => {
-    // Focus the input when the component mounts
     if (inputRef.current) {
       inputRef.current.focus();
     }
   }, []);
 
-  // Chat API handler
+
   const {
     messages: chatMessages,
     input: chatInput,
