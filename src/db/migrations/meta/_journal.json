@@ -71,6 +71,13 @@
       "when": 1746992314257,
       "tag": "0009_past_psynapse",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1748069873170,
+      "tag": "0010_curly_paladin",
+      "breakpoints": true
     }
   ]
 }

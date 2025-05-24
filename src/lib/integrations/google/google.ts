@@ -5,7 +5,7 @@ import { google } from "googleapis";
 const credentials = {
   client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
   client_secret: process.env.GOOGLE_CLIENT_SECRET,
-  redirect_uri: "http://localhost:3000/api/oauth/callback",
+  redirect_uri: `${process.env.NEXT_PUBLIC_URL}/api/oauth/callback`,
 };
 
 export function getOAuth2Client() {
