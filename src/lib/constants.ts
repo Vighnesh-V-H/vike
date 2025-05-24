@@ -21,7 +21,6 @@ import {
   Testimonial,
 } from "./types";
 
-
 export const faqItems: FAQItem[] = [
   {
     question: "How does the AI agent automation work?",
@@ -157,7 +156,7 @@ export const footerNavigation = {
     { title: "Contact", href: "#contact" },
   ],
   legal: [
-    { title: "Privacy Policy", href: "#privacy" },
+    { title: "Privacy Policy", href: "/privacy" },
     { title: "Terms of Service", href: "#terms" },
     { title: "Cookie Policy", href: "#cookies" },
   ],
@@ -303,8 +302,6 @@ export const sideBarOptions = {
   ],
 };
 
-
-
 export const integrations: Integration[] = [
   {
     name: "google",
@@ -345,7 +342,6 @@ export const integrations: Integration[] = [
     color: "bg-gray-800",
   },
 ];
-
 
 export const scopes =
   "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file  https://www.googleapis.com/auth/tasks";

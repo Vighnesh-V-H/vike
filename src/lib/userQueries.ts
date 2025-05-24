@@ -1,5 +1,3 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
 import {
   users,
   changeEmailToken,
@@ -7,11 +5,7 @@ import {
   passwordResetToken,
 } from "@/db/schema";
 import { eq } from "drizzle-orm";
-
-const connectionString = process.env.DATABASE_URL || "";
-
-const client = postgres(connectionString, { prepare: false });
-const db = drizzle(client);
+import { db } from "@/db";
 
 export async function getUserByEmail(email: string) {
   try {
