@@ -10,6 +10,7 @@ import {
 import { TooltipGlobal } from "@/components/tooltip-global";
 import Path from "@/components/path";
 import { SpotlightProvider } from "@/providers/modal-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -40,6 +41,7 @@ function Layout({ children }: { children: React.ReactNode }) {
             <main
               className={`flex-1 dark:bg-[#0f1011] max-h-[92%] dark:text-white`}>
               {children}
+              <Toaster />
             </main>
           </SidebarInset>
         </SidebarProvider>
