@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SignInSchema } from "@/lib/schema";
+
+
 import { getUserByEmail } from "@/lib/userQueries";
 import { generateVerificationToken } from "@/lib/token";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
@@ -38,12 +40,11 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   }
-
   try {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
+      redirect: false,
     });
 
     return NextResponse.json(
