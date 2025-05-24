@@ -18,13 +18,10 @@ import { Input } from "@/components/ui/input";
 import { useState, useTransition } from "react";
 import Authcard from "./authcard";
 import axios from "axios";
-import FormError from "./formError";
-import FormSuccess from "./formSuccess";
+import { toast } from "sonner";
 
 function SignupForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof SignUpSchema>>({
@@ -37,24 +34,22 @@ function SignupForm() {
   });
 
   function onSubmit(values: z.infer<typeof SignUpSchema>) {
-    setError("");
-    setSuccess("");
-
     startTransition(async () => {
       try {
         const response = await axios.post("/api/signup", values);
+        if (response.data.success) {
+          toast.success(response.data.success);
+        }
         return response.data;
-      } catch (error) {
-        return {
-           // @ts-expect-error error comes from backend
-          error: error.response?.data?.error || "Something went wrong",
-        };
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || "Something went wrong");
       }
     });
   }
 
   return (
     <Authcard
+      showAuthProvider
       header='Create an account'
       footerlink='/signin'
       footertext='Sign In'>
@@ -109,9 +104,6 @@ function SignupForm() {
                       {...field}
                       disabled={isPending}
                     />
-                    <FormError message={error} />
-                    <FormSuccess message={success} />
-
                     <Button
                       type='button'
                       variant='ghost'

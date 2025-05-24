@@ -19,13 +19,10 @@ import { useState, useTransition } from "react";
 import Authcard from "./authcard";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import FormSuccess from "./formSuccess";
-import FormError from "./formError";
+import { toast } from "sonner";
 
 function SigninForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | undefined>("");
-  const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -38,31 +35,28 @@ function SigninForm() {
   });
 
   function onSubmit(values: z.infer<typeof SignInSchema>) {
-    setError("");
-    setSuccess("");
-
     startTransition(async () => {
       try {
         const response = await axios.post("/api/signin", values);
-        console.log(response.data);
         if (response.status === 200) {
+          toast.success("Successfully signed in!");
           router.push("/integrations");
         }
 
         if (response.data.error) {
-          setError(response.data.error);
+          toast.error(response.data.error);
         }
 
         return response.data;
-      } catch (error) {
-        // @ts-expect-error error comes from backend
-        setError(error.response?.data?.error);
+      } catch (error: any) {
+        toast.error(error.response?.data?.error || "Something went wrong");
       }
     });
   }
 
   return (
     <Authcard
+      showAuthProvider
       header='Sign-In'
       footertext='Forgot password'
       footerlink='/forgot-password'>
@@ -94,7 +88,7 @@ function SigninForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <div className=' dark:bg-black bg-white dark:text-white text-black relative'>
+                  <div className='dark:bg-black bg-white dark:text-white text-black relative'>
                     <Input
                       disabled={isPending}
                       className='dark:bg-black bg-white dark:text-white text-black focus:dark:bg-black focus:bg-white active:dark:bg-black active:bg-white'
@@ -120,8 +114,6 @@ function SigninForm() {
               </FormItem>
             )}
           />
-          <FormSuccess message={success} />
-          <FormError message={error} />
           <Button
             type='submit'
             disabled={isPending}
