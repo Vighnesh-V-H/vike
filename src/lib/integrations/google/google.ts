@@ -3,15 +3,16 @@ import { google } from "googleapis";
 const dotenv = require('dotenv');
 dotenv.config();
 
+export function getOAuth2Client() {
+ 
 const credentials = {
   client_id: process.env.GOOGLE_CLIENT_ID,
-  client_secret: process.env.GOOGLE_CLIENT_SECRET,
+  client_secret: process.env.GOOGLE_CLIENT_SECRETT,
   redirect_uri: process.env.NODE_ENV === 'production' 
     ? 'https://vike-pv5b.vercel.app/api/oauth/callback'
     : `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/oauth/callback`,
 };
 
-export function getOAuth2Client() {
 
   console.log(credentials.client_id , credentials.client_secret)
 
