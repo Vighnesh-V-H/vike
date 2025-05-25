@@ -5,10 +5,15 @@ import { google } from "googleapis";
 const credentials = {
   client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
   client_secret: process.env.GOOGLE_CLIENT_SECRET,
-  redirect_uri: `${process.env.NEXT_PUBLIC_URL}/api/oauth/callback`,
+  redirect_uri: process.env.NODE_ENV === 'production' 
+    ? 'https://vike-pv5b.vercel.app/api/oauth/callback'
+    : `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/oauth/callback`,
 };
 
 export function getOAuth2Client() {
+
+  console.log(credentials.client_id , credentials.client_secret)
+
   if (!credentials.client_id || !credentials.client_secret) {
     throw new Error(
       "Missing Google OAuth credentials in environment variables"
