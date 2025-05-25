@@ -7,7 +7,7 @@ export function getOAuth2Client() {
  
 const credentials = {
   client_id: process.env.GOOGLE_CLIENT_ID,
-  client_secret: process.env.GOOGLE_CLIENT_SECRETT,
+  client_secret: process.env.GOOGLE_CLIENT_SECRET,
   redirect_uri: process.env.NODE_ENV === 'production' 
     ? 'https://vike-pv5b.vercel.app/api/oauth/callback'
     : `${process.env.NEXT_PUBLIC_URL || 'http://localhost:3000'}/api/oauth/callback`,
