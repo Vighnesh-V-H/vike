@@ -1,6 +1,7 @@
 import { google } from "googleapis";
 
-
+const dotenv = require('dotenv');
+dotenv.config();
 
 const credentials = {
   client_id: process.env.GOOGLE_CLIENT_ID,
