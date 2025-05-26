@@ -26,10 +26,14 @@ export default function Testimonials() {
                   {testimonial.author.image && (
                     <div className='mr-4'>
                       <div className='h-12 w-12 rounded-full overflow-hidden'>
+                        {" "}
                         <Image
-                          src={testimonial.author.image || "/placeholder.svg"}
-                          alt={testimonial.author.name}
+                          src={testimonial.author.image}
+                          alt={`${testimonial.author.name}'s testimonial`}
+                          height={48}
+                          width={48}
                           className='h-full w-full object-cover'
+                          unoptimized
                         />
                       </div>
                     </div>

@@ -1,4 +1,15 @@
-export const publicRoutes = ["/", "/privacy"];
+export const publicRoutes = [
+  "/",
+  "/privacy",
+  "/terms",
+  "/cookies",
+  "/about",
+  "/blog",
+  "/careers",
+  "/customers",
+  "/contact",
+  "/features",
+];
 
 export const authRoutes = [
   "/signin",

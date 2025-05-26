@@ -21,6 +21,8 @@ export type FeatureItem = {
   image?: {
     src: string;
     alt: string;
+    width?: number;
+    height?: number;
   };
 };
 

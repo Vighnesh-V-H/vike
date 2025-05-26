@@ -20,12 +20,11 @@ export default function Features() {
         {/* Bento Grid for Features */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
           {features.map((feature, index) => {
-            // Dynamically get the icon component
+           
             const IconComponent = LucideIcons[
               feature.icon as keyof typeof LucideIcons
             ] as React.FC<LucideIcons.LucideProps>;
 
-            // Determine the grid span based on feature size
             const colSpan =
               feature.size === "large"
                 ? "md:col-span-2"
@@ -50,12 +49,14 @@ export default function Features() {
                     <h3 className='text-2xl font-bold mt-4'>{feature.title}</h3>
                     <p className='mt-2 text-muted-foreground flex-grow'>
                       {feature.description}
-                    </p>
+                    </p>{" "}
                     {feature.image && (
                       <div className='mt-6 bg-background dark:bg-muted/20 rounded-lg p-4 border'>
                         <Image
-                          src={feature.image.src || "/placeholder.svg"}
+                          src={feature.image.src}
                           alt={feature.image.alt}
+                          width={600}
+                          height={300}
                           className='w-full h-auto rounded-md'
                         />
                       </div>
@@ -79,6 +80,8 @@ export default function Features() {
                         <Image
                           src={feature.image.src || "/placeholder.svg"}
                           alt={feature.image.alt}
+                          height={200}
+                          width={200}
                           className='w-full h-auto rounded-lg border'
                         />
                       </div>

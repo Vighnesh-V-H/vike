@@ -3,6 +3,7 @@
 import { integrations } from "@/lib/constants";
 import { IntegrationCard } from "@/components/integrations/integrationCard";
 
+
 export function Integrations() {
   return (
     <div className='container ml-4 mx-auto py-8'>
