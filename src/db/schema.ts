@@ -32,6 +32,8 @@ export const users = pgTable("user", {
   password: text("password"),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
+  stripeCustomerId: text("stripeCustomerId"),
+  subscriptionStatus: text("subscription_status").default("free").notNull(),
 });
 
 export const accounts = pgTable(
@@ -184,8 +186,6 @@ export const integrations = pgTable(
 export const usersRelations = relations(users, ({ many }) => ({
   integrations: many(integrations),
 }));
-
-
 
 export const documents = pgTable(
   "documents",
@@ -345,5 +345,55 @@ export const embeddingJobs = pgTable(
     ),
   })
 );
+
+export const subscriptionPlans = pgTable("subscription_plans", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  price: integer("price").notNull(), // Price in cents
+  features: jsonb("features").$type<string[]>(),
+  stripePriceId: text("stripe_price_id"),
+  isCustom: boolean("is_custom").default(false),
+});
+
+export const subscriptions = pgTable("subscriptions", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  planId: text("planId")
+    .notNull()
+    .references(() => subscriptionPlans.id),
+  status: text("status").notNull(), // active, cancelled, past_due
+  currentPeriodStart: timestamp("current_period_start", {
+    mode: "date",
+  }).notNull(),
+  currentPeriodEnd: timestamp("current_period_end", { mode: "date" }).notNull(),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  createdAt: timestamp("created_at", { mode: "date" }).$defaultFn(
+    () => new Date()
+  ),
+  updatedAt: timestamp("updated_at", { mode: "date" }).$defaultFn(
+    () => new Date()
+  ),
+});
+
+// Add subscription relations
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [subscriptions.userId],
+    references: [users.id],
+  }),
+  plan: one(subscriptionPlans, {
+    fields: [subscriptions.planId],
+    references: [subscriptionPlans.id],
+  }),
+}));
 
 export type Document = typeof documents.$inferInsert;
