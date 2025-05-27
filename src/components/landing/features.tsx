@@ -17,7 +17,6 @@ export default function Features() {
           </p>
         </div>
 
-        {/* Bento Grid for Features */}
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
           {features.map((feature, index) => {
            
@@ -78,7 +77,7 @@ export default function Features() {
                     {feature.image && (
                       <div className='flex-1'>
                         <Image
-                          src={feature.image.src || "/placeholder.svg"}
+                          src={feature.image.src || "/images/workflow.png"}
                           alt={feature.image.alt}
                           height={200}
                           width={200}

@@ -62,7 +62,7 @@ export const features: FeatureItem[] = [
     icon: "Bot",
     size: "large",
     image: {
-      src: "/automation.png",
+      src: "/images/automation.png",
       alt: "AI Agent Dashboard",
       width: 800,
       height: 500,
