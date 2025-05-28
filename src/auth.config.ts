@@ -39,5 +39,5 @@ export default {
       },
     }),
   ],
-  debug: true,
+  secret: process.env.AUTH_SECRET,
 } satisfies NextAuthConfig;
