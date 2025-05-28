@@ -185,8 +185,6 @@ export const usersRelations = relations(users, ({ many }) => ({
   integrations: many(integrations),
 }));
 
-
-
 export const documents = pgTable(
   "documents",
   {
@@ -347,3 +345,173 @@ export const embeddingJobs = pgTable(
 );
 
 export type Document = typeof documents.$inferInsert;
+
+export const emails = pgTable(
+  "emails",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    messageId: text("message_id").notNull(),
+    threadId: text("thread_id"),
+    from: text("from").notNull(),
+    to: text("to").notNull(),
+    subject: text("subject"),
+    body: text("body"),
+    snippet: text("snippet"),
+    read: boolean("read").default(false).notNull(),
+    starred: boolean("starred").default(false).notNull(),
+    categoryId: text("category_id").references(() => emailCategories.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    receivedAt: timestamp("received_at"),
+    labels: jsonb("labels"),
+    attachments: jsonb("attachments"),
+    isArchived: boolean("is_archived").default(false).notNull(),
+  },
+  (table) => [
+    index("user_id_idx").on(table.userId),
+    index("thread_id_idx").on(table.threadId),
+    index("message_id_idx").on(table.messageId),
+    index("category_id_idx").on(table.categoryId),
+  ]
+);
+
+export const emailCategories = pgTable(
+  "email_categories",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    color: text("color").default("#4285F4").notNull(),
+    icon: text("icon").default("inbox"),
+    isSystem: boolean("is_system").default(false).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("user_category_name_idx").on(table.userId, table.name),
+    index("user_id_idx").on(table.userId),
+  ]
+);
+
+export const emailWorkflows = pgTable(
+  "email_workflows",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description"),
+    isActive: boolean("is_active").default(true).notNull(),
+    triggerConditions: jsonb("trigger_conditions").notNull(),
+    actions: jsonb("actions").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("user_id_idx").on(table.userId),
+  ]
+);
+
+export const emailTemplates = pgTable(
+  "email_templates",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    subject: text("subject").notNull(),
+    body: text("body").notNull(),
+    variables: jsonb("variables"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("user_template_name_idx").on(table.userId, table.name),
+    index("user_id_idx").on(table.userId),
+  ]
+);
+
+export const emailDigestSettings = pgTable(
+  "email_digest_settings",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    frequency: text("frequency").$type<"daily" | "weekly" | "monthly">().notNull(),
+    categories: jsonb("categories"),
+    timeOfDay: text("time_of_day"),
+    dayOfWeek: integer("day_of_week"),
+    dayOfMonth: integer("day_of_month"),
+    lastSent: timestamp("last_sent"),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("user_digest_name_idx").on(table.userId, table.name),
+    index("user_id_idx").on(table.userId),
+  ]
+);
+
+export const emailRelations = relations(emails, ({ one }) => ({
+  user: one(users, {
+    fields: [emails.userId],
+    references: [users.id],
+  }),
+  category: one(emailCategories, {
+    fields: [emails.categoryId],
+    references: [emailCategories.id],
+  }),
+}));
+
+export const emailCategoriesRelations = relations(emailCategories, ({ one, many }) => ({
+  user: one(users, {
+    fields: [emailCategories.userId],
+    references: [users.id],
+  }),
+  emails: many(emails),
+}));
+
+export const emailWorkflowsRelations = relations(emailWorkflows, ({ one }) => ({
+  user: one(users, {
+    fields: [emailWorkflows.userId],
+    references: [users.id],
+  }),
+}));
+
+export const emailTemplatesRelations = relations(emailTemplates, ({ one }) => ({
+  user: one(users, {
+    fields: [emailTemplates.userId],
+    references: [users.id],
+  }),
+}));
+
+export const emailDigestSettingsRelations = relations(emailDigestSettings, ({ one }) => ({
+  user: one(users, {
+    fields: [emailDigestSettings.userId],
+    references: [users.id],
+  }),
+}));

@@ -10,6 +10,7 @@ import {
   Slack,
   FileText,
   HardDrive,
+  ExternalLink,
 } from "lucide-react";
 
 import {
@@ -290,6 +291,12 @@ export const sideBarOptions = {
       title: "Tasks",
       url: "#",
       icon: BookOpen,
+    },
+    {
+      title: "Mail Service",
+      url: "https://mail.google.com",
+      icon: Mail,
+      external: true,
     },
     {
       title: "Settings",
