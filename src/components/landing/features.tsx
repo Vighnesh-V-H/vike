@@ -57,6 +57,7 @@ export default function Features() {
                           width={600}
                           height={300}
                           className='w-full h-auto rounded-md'
+                          unoptimized
                         />
                       </div>
                     )}
@@ -82,6 +83,7 @@ export default function Features() {
                           height={200}
                           width={200}
                           className='w-full h-auto rounded-lg border'
+                          unoptimized
                         />
                       </div>
                     )}

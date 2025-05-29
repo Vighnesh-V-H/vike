@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { pricingPlans } from "@/lib/constants";
+import Image from "next/image";
 
 export default function Pricing() {
   return (
@@ -25,9 +26,24 @@ export default function Pricing() {
                   Popular
                 </div>
               )}
-              <div className='mb-4'>
-                <h3 className='text-xl font-bold'>{plan.name}</h3>
-                <p className='text-muted-foreground mt-1'>{plan.description}</p>
+              <div className='mb-4 flex items-center gap-3'>
+                {plan.icon && (
+                  <div className='flex-shrink-0'>
+                    <Image
+                      src={plan.icon.src}
+                      alt={plan.icon.alt}
+                      width={plan.icon.width}
+                      height={plan.icon.height}
+                      className='h-auto'
+                    />
+                  </div>
+                )}
+                <div>
+                  <h3 className='text-xl font-bold'>{plan.name}</h3>
+                  <p className='text-muted-foreground mt-1'>
+                    {plan.description}
+                  </p>
+                </div>
               </div>
               <div className='mb-4'>
                 <span className='text-4xl font-bold'>${plan.price}</span>

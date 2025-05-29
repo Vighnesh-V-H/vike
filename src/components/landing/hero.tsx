@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
+import { heroSection } from "@/lib/constants";
 
 export default function Hero() {
   return (
@@ -9,14 +10,25 @@ export default function Hero() {
         <div className='grid gap-6 lg:grid-cols-2 lg:gap-12 items-center'>
           <div className='flex flex-col justify-center space-y-4'>
             <div className='space-y-2'>
+              <div className='mb-4'>
+                <Image
+                  src={heroSection.logo.src}
+                  alt={heroSection.logo.alt}
+                  width={heroSection.logo.width}
+                  height={heroSection.logo.height}
+                  className='h-auto'
+                  priority
+                  unoptimized
+                />
+              </div>
               <h1 className='text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none'>
-                Automate Your CRM <br />
-                <span className='text-primary'>With AI Agents</span>
+                {heroSection.title.split(" ").slice(0, 3).join(" ")} <br />
+                <span className='text-primary'>
+                  {heroSection.title.split(" ").slice(3).join(" ")}
+                </span>
               </h1>
               <p className='max-w-[600px] text-muted-foreground md:text-xl'>
-                Transform your customer relationships with intelligent
-                automation. Our AI agents handle routine tasks, analyze customer
-                data, and provide actionable insights.
+                {heroSection.subtitle}
               </p>
             </div>
             <div className='flex flex-col gap-2 min-[400px]:flex-row'>
@@ -34,8 +46,8 @@ export default function Hero() {
                 <div className='h-8 w-8 rounded-full border-2 border-background bg-gray-400'></div>
               </div>
               <div className='text-muted-foreground'>
-                Trusted by
-                <span className='font-medium text-foreground'>2,000+</span>
+                Trusted by{" "}
+                <span className='font-medium text-foreground'>2,000+</span>{" "}
                 companies
               </div>
             </div>
@@ -44,12 +56,13 @@ export default function Hero() {
             <div className='relative w-full max-w-[500px] aspect-video rounded-xl bg-gradient-to-br from-primary/20 to-primary/40 p-1'>
               <div className='absolute inset-0 rounded-lg overflow-hidden'>
                 <Image
-                  src='/images/dashboard.svg'
-                  width={800}
-                  height={500}
-                  alt='AI CRM Dashboard'
+                  src={heroSection.image.src}
+                  width={heroSection.image.width}
+                  height={heroSection.image.height}
+                  alt={heroSection.image.alt}
                   className='w-full h-full object-cover'
                   priority
+                  unoptimized
                 />
               </div>
             </div>

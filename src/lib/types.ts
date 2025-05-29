@@ -40,6 +40,12 @@ export type PricingPlan = {
   features: string[];
   buttonText: string;
   buttonVariant?: "default" | "outline";
+  icon?: {
+    src: string;
+    alt: string;
+    width: number;
+    height: number;
+  };
 };
 
 export type Testimonial = {

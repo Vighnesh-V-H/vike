@@ -39,3 +39,27 @@ export const googleTaskSchema = z.object({
     .optional()
     .describe("the ID of the task list to insert into"),
 });
+
+export const leadScraperSchema = z.object({
+  industry: z
+    .string()
+    .describe("Industry or business category to find leads for"),
+  location: z
+    .string()
+    .optional()
+    .describe("Geographic location to find leads in"),
+  keywords: z
+    .array(z.string())
+    .optional()
+    .describe("Specific keywords related to the target audience"),
+  maxResults: z
+    .number()
+    .min(1)
+    .max(50)
+    .default(10)
+    .describe("Maximum number of leads to return"),
+  includeContactInfo: z
+    .boolean()
+    .default(true)
+    .describe("Whether to include contact information in results"),
+});

@@ -12,7 +12,7 @@ export default function Testimonials() {
             Trusted by Businesses Worldwide
           </h2>
           <p className='mt-4 text-xl text-muted-foreground max-w-[700px] mx-auto'>
-            See what our customers have to say about AutoCRM
+            See what our customers have to say about Vike
           </p>
         </div>
 
@@ -25,14 +25,14 @@ export default function Testimonials() {
                 <div className='flex items-center'>
                   {testimonial.author.image && (
                     <div className='mr-4'>
-                      <div className='h-12 w-12 rounded-full overflow-hidden'>
-                        {" "}
+                      <div className='h-12 w-12 rounded-full overflow-hidden border border-muted'>
                         <Image
                           src={testimonial.author.image}
                           alt={`${testimonial.author.name}'s testimonial`}
                           height={48}
                           width={48}
                           className='h-full w-full object-cover'
+                          priority
                           unoptimized
                         />
                       </div>

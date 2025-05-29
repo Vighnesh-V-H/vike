@@ -63,7 +63,7 @@ export const features: FeatureItem[] = [
     size: "large",
     image: {
       src: "/images/automation.png",
-      alt: "AI Agent Dashboard",
+      alt: "AI Agent Automation",
       width: 800,
       height: 500,
     },
@@ -73,6 +73,12 @@ export const features: FeatureItem[] = [
     description:
       "Gain insights from customer data with powerful analytics and visualization tools.",
     icon: "BarChart3",
+    image: {
+      src: "/images/dashboard.svg",
+      alt: "Analytics Dashboard",
+      width: 600,
+      height: 400,
+    },
   },
   {
     title: "Customer Segmentation",
@@ -151,6 +157,7 @@ export const navItems: NavItem[] = [
 export const footerNavigation = {
   product: [
     { title: "Features", href: "/features" },
+    { title: "Lead Scraper", href: "/leads" },
     { title: "Pricing", href: "/#pricing" },
     { title: "Integrations", href: "/integrations" },
     { title: "AI Agent", href: "/agent" },
@@ -175,6 +182,12 @@ export const footerNavigation = {
     { title: "LinkedIn", href: "#", icon: "Linkedin" },
     { title: "GitHub", href: "#", icon: "Github" },
   ],
+  logo: {
+    src: "/images/V.png",
+    alt: "Vike Logo",
+    width: 40,
+    height: 40,
+  },
 };
 
 export const pricingPlans: PricingPlan[] = [
@@ -191,6 +204,12 @@ export const pricingPlans: PricingPlan[] = [
     ],
     buttonText: "Get Started",
     buttonVariant: "outline",
+    icon: {
+      src: "/images/V.png",
+      alt: "Starter Plan",
+      width: 48,
+      height: 48,
+    },
   },
   {
     name: "Professional",
@@ -206,6 +225,12 @@ export const pricingPlans: PricingPlan[] = [
       "Custom integrations",
     ],
     buttonText: "Get Started",
+    icon: {
+      src: "/images/V.png",
+      alt: "Professional Plan",
+      width: 48,
+      height: 48,
+    },
   },
   {
     name: "Enterprise",
@@ -222,6 +247,12 @@ export const pricingPlans: PricingPlan[] = [
     ],
     buttonText: "Contact Sales",
     buttonVariant: "outline",
+    icon: {
+      src: "/images/V.png",
+      alt: "Enterprise Plan",
+      width: 48,
+      height: 48,
+    },
   },
 ];
 
@@ -272,17 +303,22 @@ export const sideBarOptions = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "/images/testimonial-male.png", // Using testimonial image as fallback avatar
+    avatar: "/images/avatar-placeholder.svg",
   },
   navMain: [
     {
       title: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboardIcon,
+      image: {
+        src: "/images/dashboard.svg",
+        alt: "Dashboard Icon",
+        width: 24,
+        height: 24,
+      },
     },
-
     {
-      title: "Leads",
+      title: "Lead Scraper",
       url: "/leads",
       icon: Mail,
     },
@@ -300,6 +336,12 @@ export const sideBarOptions = {
       title: "Integrations",
       url: "/integrations",
       icon: Workflow,
+      image: {
+        src: "/images/workflow.svg",
+        alt: "Workflow Icon",
+        width: 24,
+        height: 24,
+      },
     },
     {
       title: "Agent",
@@ -308,6 +350,14 @@ export const sideBarOptions = {
       isActive: true,
     },
   ],
+  branding: {
+    logo: {
+      src: "/images/V.png",
+      alt: "Vike Logo",
+      width: 32,
+      height: 32,
+    },
+  },
 };
 
 export const integrations: Integration[] = [
@@ -340,7 +390,6 @@ export const integrations: Integration[] = [
     redirectUrl: "https://slack.com/oauth/authorize",
     color: "bg-purple-500",
   },
-
   {
     name: "Notion",
     description:
@@ -350,6 +399,23 @@ export const integrations: Integration[] = [
     color: "bg-gray-800",
   },
 ];
+
+export const heroSection = {
+  title: "AI-Powered Customer Relationship Management",
+  subtitle: "Transform your customer interactions with intelligent automation",
+  image: {
+    src: "/images/automation.png",
+    alt: "AI-Powered CRM",
+    width: 1200,
+    height: 800,
+  },
+  logo: {
+    src: "/images/V.png",
+    alt: "Vike Logo",
+    width: 60,
+    height: 60,
+  },
+};
 
 export const scopes =
   "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file  https://www.googleapis.com/auth/tasks";

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { navItems } from "@/lib/constants";
+import { navItems, footerNavigation } from "@/lib/constants";
+import Image from "next/image";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,20 +19,32 @@ export default function Navbar() {
     <header className='sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
       <div className='container flex h-16 items-center justify-between'>
         <div className='flex items-center gap-2'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            className='h-6 w-6 text-primary'>
-            <path d='M12 2a10 10 0 1 0 10 10H12V2Z' />
-            <path d='M12 12 2.1 9.1a10 10 0 0 0 9.8 12.9L12 12Z' />
-            <path d='M12 12 9.1 2.1a10 10 0 0 0 12.9 9.8L12 12Z' />
-          </svg>
-          <span className='text-xl font-bold'>AutoCRM</span>
+          {footerNavigation.logo ? (
+            <Image
+              src={footerNavigation.logo.src}
+              alt={footerNavigation.logo.alt}
+              width={footerNavigation.logo.width}
+              height={footerNavigation.logo.height}
+              className='h-auto'
+              priority
+              unoptimized
+            />
+          ) : (
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              className='h-6 w-6 text-primary'>
+              <path d='M12 2a10 10 0 1 0 10 10H12V2Z' />
+              <path d='M12 12 2.1 9.1a10 10 0 0 0 9.8 12.9L12 12Z' />
+              <path d='M12 12 9.1 2.1a10 10 0 0 0 12.9 9.8L12 12Z' />
+            </svg>
+          )}
+          <span className='text-xl font-bold'>Vike</span>
         </div>
 
         <nav className='hidden md:flex items-center gap-6'>
