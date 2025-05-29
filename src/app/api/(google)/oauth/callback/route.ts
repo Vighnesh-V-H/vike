@@ -8,6 +8,8 @@ import { db } from "@/db";
 import { integrations } from "@/db/schema";
 import { handleGoogleDoc } from "@/lib/integrations/google/googleDoc";
 import { AuthenticationError, IntegrationError } from "@/lib/exceptions";
+import { getSheets } from "@/lib/integrations/google/googleSheets";
+import { eq } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -57,13 +59,38 @@ export async function GET(request: NextRequest) {
 
     if (tokens.refresh_token) {
       oauth2Client.setCredentials({ refresh_token: tokens.refresh_token });
-      const files = await getDocs(oauth2Client);
 
+      // Process Google Docs
+      const files = await getDocs(oauth2Client);
       await Promise.allSettled(
         files.map((file) =>
           handleGoogleDoc(file, oauth2Client, integrated.userId)
         )
       );
+
+      // Process Google Sheets
+      try {
+        const sheets = await getSheets(oauth2Client);
+        console.log(`Found ${sheets.length} Google Sheets`);
+
+        // Here you could add additional processing for the sheets if needed
+        // For example, storing sheet metadata in your database
+        if (sheets.length > 0) {
+          await db
+            .update(integrations)
+            .set({
+              data: {
+                ...tokens,
+                sheets_count: sheets.length,
+                sheets_last_synced: new Date().toISOString(),
+              },
+            })
+            .where(eq(integrations.id, integrationId));
+        }
+      } catch (sheetsError) {
+        console.error("Error processing Google Sheets:", sheetsError);
+        // Continue with the flow even if sheets processing fails
+      }
     }
 
     await setIntegrationCookie(integrationId);

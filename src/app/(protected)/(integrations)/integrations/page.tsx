@@ -1,24 +1,25 @@
-import { Suspense } from "react";
 import { Integrations } from "@/components/integrations/integrations";
-import { Skeleton } from "@/components/ui/skeleton";
+import { IntegrationStatus } from "@/components/integrations/integration-status";
 
-function IntegrationsLoading() {
-  return (
-    <div className='container ml-4 mx-auto py-8'>
-      <Skeleton className='h-8 w-64 mb-6' />
-      <div className='flex gap-8 flex-wrap'>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className='h-[200px] w-[300px]' />
-        ))}
-      </div>
-    </div>
-  );
-}
+export const metadata = {
+  title: "Integrations",
+  description: "Connect with other apps and services.",
+};
 
 export default function IntegrationsPage() {
   return (
-    <Suspense fallback={<IntegrationsLoading />}>
+    <div className='flex flex-col gap-10'>
+      <div>
+        <h1 className='text-2xl font-bold mb-4 dark:text-gray-200'>
+          Integrations
+        </h1>
+        <p className='text-gray-500 dark:text-gray-400 mb-6'>
+          Connect your Vike account with other apps and services to enhance
+          productivity.
+        </p>
+        <IntegrationStatus />
+      </div>
       <Integrations />
-    </Suspense>
+    </div>
   );
 }

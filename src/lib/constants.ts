@@ -10,6 +10,7 @@ import {
   Slack,
   FileText,
   HardDrive,
+  FileSpreadsheet,
 } from "lucide-react";
 
 import {
@@ -292,6 +293,11 @@ export const sideBarOptions = {
       icon: BookOpen,
     },
     {
+      title: "Google Sheets",
+      url: "/google/sheets",
+      icon: FileSpreadsheet,
+    },
+    {
       title: "Settings",
       url: "/settings",
       icon: Settings,
@@ -317,6 +323,14 @@ export const integrations: Integration[] = [
     icon: HardDrive,
     redirectUrl: "authurl",
     color: "bg-blue-500",
+  },
+  {
+    name: "Microsoft Excel",
+    description: "Connect to Excel files for spreadsheet data and analysis.",
+    icon: FileSpreadsheet,
+    redirectUrl:
+      "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    color: "bg-green-600",
   },
   {
     name: "GitHub",
@@ -352,5 +366,5 @@ export const integrations: Integration[] = [
 ];
 
 export const scopes =
-  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file  https://www.googleapis.com/auth/tasks";
+  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/spreadsheets";
  

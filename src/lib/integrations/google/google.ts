@@ -1,18 +1,16 @@
 import { google } from "googleapis";
 
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
 
 export function getOAuth2Client() {
- 
-const credentials = {
-  client_id: process.env.GOOGLE_CLIENT_ID,
-  client_secret: process.env.GOOGLE_CLIENT_SECRETT,
-  redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-};
+  const credentials = {
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+    redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+  };
 
-
-  console.log(credentials.client_id , credentials.client_secret)
+  console.log(credentials.client_id, credentials.client_secret);
 
   if (!credentials.client_id || !credentials.client_secret) {
     throw new Error(
@@ -34,6 +32,7 @@ export function getScopes() {
     "https://www.googleapis.com/auth/drive.readonly",
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/tasks",
+    "https://www.googleapis.com/auth/spreadsheets",
   ];
 }
 
