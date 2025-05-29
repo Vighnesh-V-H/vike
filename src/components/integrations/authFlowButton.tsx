@@ -1,13 +1,14 @@
 "use client";
 
 import GoogleAuthButton from "@/components/integrations/buttons/google-auth-button";
-
-
+import ExcelAuthButton from "@/components/integrations/buttons/excel-auth-button";
 
 function AuthFlowButton({ name }: { name: string }) {
-  switch (name) {
+  switch (name.toLowerCase()) {
     case "google":
       return <GoogleAuthButton />;
+    case "microsoft excel":
+      return <ExcelAuthButton />;
     default:
       return <div>Coming Soon</div>;
   }

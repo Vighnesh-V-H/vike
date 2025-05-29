@@ -10,6 +10,7 @@ import {
   Slack,
   FileText,
   HardDrive,
+  FileSpreadsheet,
 } from "lucide-react";
 
 import {
@@ -62,8 +63,10 @@ export const features: FeatureItem[] = [
     icon: "Bot",
     size: "large",
     image: {
-      src: "/placeholder.svg?height=300&width=600",
+      src: "/images/automation.png",
       alt: "AI Agent Dashboard",
+      width: 800,
+      height: 500,
     },
   },
   {
@@ -97,8 +100,10 @@ export const features: FeatureItem[] = [
     icon: "Zap",
     size: "wide",
     image: {
-      src: "/placeholder.svg?height=200&width=500",
+      src: "/images/workflow.png",
       alt: "Workflow Automation",
+      width: 600,
+      height: 300,
     },
   },
   {
@@ -124,41 +129,45 @@ export const features: FeatureItem[] = [
 export const navItems: NavItem[] = [
   {
     title: "Features",
-    href: "#features",
+    href: "/features",
   },
   {
     title: "Pricing",
-    href: "#pricing",
+    href: "/#pricing",
   },
   {
-    title: "Testimonials",
-    href: "#testimonials",
+    title: "Customers",
+    href: "/customers",
+  },
+  {
+    title: "About",
+    href: "/about",
   },
   {
     title: "Contact",
-    href: "#contact",
+    href: "/contact",
   },
 ];
 
 export const footerNavigation = {
   product: [
-    { title: "Features", href: "#features" },
-    { title: "Pricing", href: "#pricing" },
-    { title: "Integrations", href: "#integrations" },
-    { title: "Changelog", href: "#changelog" },
-    { title: "Roadmap", href: "#roadmap" },
+    { title: "Features", href: "/features" },
+    { title: "Pricing", href: "/#pricing" },
+    { title: "Integrations", href: "/integrations" },
+    { title: "AI Agent", href: "/agent" },
+    { title: "Dashboard", href: "/dashboard" },
   ],
   company: [
-    { title: "About", href: "#about" },
-    { title: "Blog", href: "#blog" },
-    { title: "Careers", href: "#careers" },
-    { title: "Customers", href: "#customers" },
-    { title: "Contact", href: "#contact" },
+    { title: "About", href: "/about" },
+    { title: "Blog", href: "/blog" },
+    { title: "Careers", href: "/careers" },
+    { title: "Customers", href: "/customers" },
+    { title: "Contact", href: "/contact" },
   ],
   legal: [
     { title: "Privacy Policy", href: "/privacy" },
-    { title: "Terms of Service", href: "#terms" },
-    { title: "Cookie Policy", href: "#cookies" },
+    { title: "Terms of Service", href: "/terms" },
+    { title: "Cookie Policy", href: "/cookies" },
   ],
   social: [
     { title: "Facebook", href: "#", icon: "Facebook" },
@@ -225,7 +234,7 @@ export const testimonials: Testimonial[] = [
       name: "Sarah Johnson",
       role: "Head of Customer Success",
       company: "TechGrowth Inc.",
-      image: "/placeholder.svg?height=100&width=100",
+      image: "/images/testimonial-female.png",
     },
   },
   {
@@ -235,7 +244,7 @@ export const testimonials: Testimonial[] = [
       name: "Michael Chen",
       role: "Sales Director",
       company: "Innovate Solutions",
-      image: "/placeholder.svg?height=100&width=100",
+      image: "/images/testimonial-male.png",
     },
   },
   {
@@ -245,7 +254,7 @@ export const testimonials: Testimonial[] = [
       name: "Emily Rodriguez",
       role: "CTO",
       company: "FutureTech",
-      image: "/placeholder.svg?height=100&width=100",
+      image: "/images/testimonial-female.png",
     },
   },
   {
@@ -255,7 +264,7 @@ export const testimonials: Testimonial[] = [
       name: "David Wilson",
       role: "Marketing Manager",
       company: "Growth Ventures",
-      image: "/placeholder.svg?height=100&width=100",
+      image: "/images/testimonial-male.png",
     },
   },
 ];
@@ -264,7 +273,7 @@ export const sideBarOptions = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "/images/testimonial-male.png", // Using testimonial image as fallback avatar
   },
   navMain: [
     {
@@ -282,6 +291,11 @@ export const sideBarOptions = {
       title: "Tasks",
       url: "#",
       icon: BookOpen,
+    },
+    {
+      title: "Google Sheets",
+      url: "/google/sheets",
+      icon: FileSpreadsheet,
     },
     {
       title: "Settings",
@@ -309,6 +323,14 @@ export const integrations: Integration[] = [
     icon: HardDrive,
     redirectUrl: "authurl",
     color: "bg-blue-500",
+  },
+  {
+    name: "Microsoft Excel",
+    description: "Connect to Excel files for spreadsheet data and analysis.",
+    icon: FileSpreadsheet,
+    redirectUrl:
+      "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    color: "bg-green-600",
   },
   {
     name: "GitHub",
@@ -344,4 +366,5 @@ export const integrations: Integration[] = [
 ];
 
 export const scopes =
-  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file  https://www.googleapis.com/auth/tasks";
+  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/spreadsheets";
+ 
