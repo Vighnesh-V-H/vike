@@ -29,9 +29,9 @@ export const faqItems: FAQItem[] = [
       "Our AI agents use natural language processing and machine learning to understand customer inquiries, provide relevant responses, and take appropriate actions. They learn from each interaction to continuously improve their performance and can be customized to match your brand voice and business rules.",
   },
   {
-    question: "Can I integrate AutoCRM with my existing tools?",
+    question: "Can I integrate Vike with my existing tools?",
     answer:
-      "Yes, AutoCRM offers seamless integration with popular business tools including Salesforce, HubSpot, Slack, Microsoft Teams, Google Workspace, and many more. We also provide an API for custom integrations with your proprietary systems.",
+      "Yes, Vike offers seamless integration with popular business tools including Salesforce, HubSpot, Slack, Microsoft Teams, Google Workspace, and many more. We also provide an API for custom integrations with your proprietary systems.",
   },
   {
     question: "Is my customer data secure?",
@@ -39,14 +39,14 @@ export const faqItems: FAQItem[] = [
       "Absolutely. We implement bank-level encryption, regular security audits, and comply with GDPR, CCPA, and other data protection regulations. Your data is stored in SOC 2 compliant data centers, and we offer data residency options for businesses with specific geographic requirements.",
   },
   {
-    question: "How long does it take to implement AutoCRM?",
+    question: "How long does it take to implement Vike?",
     answer:
       "Most customers are up and running within 1-2 weeks. Our onboarding team will guide you through the setup process, help with data migration, and provide training for your team. For enterprise customers with complex requirements, we offer custom implementation plans.",
   },
   {
     question: "Do you offer a free trial?",
     answer:
-      "Yes, we offer a 14-day free trial with full access to all features. No credit card is required to start your trial. You can also request a personalized demo to see how AutoCRM can address your specific business needs.",
+      "Yes, we offer a 14-day free trial with full access to all features. No credit card is required to start your trial. You can also request a personalized demo to see how Vike can address your specific business needs.",
   },
   {
     question: "How does billing work?",
@@ -229,7 +229,8 @@ export const pricingPlans: PricingPlan[] = [
 export const testimonials: Testimonial[] = [
   {
     content:
-      "AutoCRM has transformed how we manage customer relationships. The AI agents have saved our team countless hours on routine tasks, allowing us to focus on strategic initiatives.",
+      "Vike has transformed how we manage customer relationships. The AI agents have saved our team countless hours on routine tasks, allowing us to focus on strategic initiatives.",
+    highlight: "37% increase in customer satisfaction",
     author: {
       name: "Sarah Johnson",
       role: "Head of Customer Success",
@@ -240,6 +241,7 @@ export const testimonials: Testimonial[] = [
   {
     content:
       "The predictive insights feature has been a game-changer for our sales team. We're now able to anticipate customer needs before they even express them.",
+    highlight: "42% boost in conversion rates",
     author: {
       name: "Michael Chen",
       role: "Sales Director",
@@ -249,7 +251,7 @@ export const testimonials: Testimonial[] = [
   },
   {
     content:
-      "Implementation was seamless, and the ROI was evident within the first month. Our customer satisfaction scores have increased by 35% since adopting AutoCRM.",
+      "Implementation was seamless, and the ROI was evident within the first month. Our customer satisfaction scores have increased by 35% since adopting Vike.",
     author: {
       name: "Emily Rodriguez",
       role: "CTO",

@@ -44,6 +44,7 @@ export type PricingPlan = {
 
 export type Testimonial = {
   content: string;
+  highlight?: string;
   author: {
     name: string;
     role: string;

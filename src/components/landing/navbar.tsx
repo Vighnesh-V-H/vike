@@ -31,7 +31,7 @@ export default function Navbar() {
             <path d='M12 12 2.1 9.1a10 10 0 0 0 9.8 12.9L12 12Z' />
             <path d='M12 12 9.1 2.1a10 10 0 0 0 12.9 9.8L12 12Z' />
           </svg>
-          <span className='text-xl font-bold'>AutoCRM</span>
+          <span className='text-xl font-bold'>Vike</span>
         </div>
 
         <nav className='hidden md:flex items-center gap-6'>

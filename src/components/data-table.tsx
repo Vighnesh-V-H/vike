@@ -73,7 +73,7 @@ interface DataTableProps<TData, TValue> {
   onBulkExport?: (selectedRows: TData[]) => void;
 }
 
-// Custom filter function for global search
+
 const globalFilterFn = (row: any, columnId: string, value: string) => {
   const search = value.toLowerCase();
 

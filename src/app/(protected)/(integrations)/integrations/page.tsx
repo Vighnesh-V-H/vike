@@ -1,5 +1,6 @@
 import { Integrations } from "@/components/integrations/integrations";
 import { IntegrationStatus } from "@/components/integrations/integration-status";
+import { Suspense } from "react";
 
 export const metadata = {
   title: "Integrations",
@@ -17,7 +18,9 @@ export default function IntegrationsPage() {
           Connect your Vike account with other apps and services to enhance
           productivity.
         </p>
-        <IntegrationStatus />
+        <Suspense fallback={null}>
+          <IntegrationStatus />
+        </Suspense>
       </div>
       <Integrations />
     </div>

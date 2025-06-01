@@ -15,7 +15,7 @@ export default function FAQ() {
             Frequently Asked Questions
           </h2>
           <p className='mt-4 text-xl text-muted-foreground max-w-[700px] mx-auto'>
-            Find answers to common questions about AutoCRM
+            Find answers to common questions about VikeAi
           </p>
         </div>
 
