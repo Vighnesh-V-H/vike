@@ -230,6 +230,7 @@ export const testimonials: Testimonial[] = [
   {
     content:
       "Vike has transformed how we manage customer relationships. The AI agents have saved our team countless hours on routine tasks, allowing us to focus on strategic initiatives.",
+    highlight: "37% increase in customer satisfaction",
     author: {
       name: "Sarah Johnson",
       role: "Head of Customer Success",
@@ -240,6 +241,7 @@ export const testimonials: Testimonial[] = [
   {
     content:
       "The predictive insights feature has been a game-changer for our sales team. We're now able to anticipate customer needs before they even express them.",
+    highlight: "42% boost in conversion rates",
     author: {
       name: "Michael Chen",
       role: "Sales Director",
