@@ -25,7 +25,7 @@ export default function Footer() {
                 <path d='M12 12 2.1 9.1a10 10 0 0 0 9.8 12.9L12 12Z' />
                 <path d='M12 12 9.1 2.1a10 10 0 0 0 12.9 9.8L12 12Z' />
               </svg>
-              <span className='text-xl font-bold'>AutoCRM</span>
+              <span className='text-xl font-bold'>Vike</span>
             </div>
             <p className='text-muted-foreground mb-4'>
               Transforming customer relationships with intelligent automation.
@@ -96,7 +96,7 @@ export default function Footer() {
 
         <div className='border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center'>
           <p className='text-sm text-muted-foreground'>
-            © {new Date().getFullYear()} AutoCRM. All rights reserved.
+            © {new Date().getFullYear()} Vike. All rights reserved.
           </p>
           <div className='flex gap-4 mt-4 md:mt-0'>
             {footerNavigation.legal.map((item) => (
