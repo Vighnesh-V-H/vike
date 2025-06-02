@@ -31,7 +31,6 @@ export default function SheetViewPage() {
       if (!sheetId) return;
 
       try {
-        // Fetch sheet data from the API
         const response = await axios.get(
           `/api/integrations/google/sheets/${sheetId}`
         );

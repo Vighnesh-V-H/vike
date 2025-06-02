@@ -78,6 +78,13 @@
       "when": 1748069873170,
       "tag": "0010_curly_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1748811349210,
+      "tag": "0011_dear_silver_sable",
+      "breakpoints": true
     }
   ]
 }

@@ -12,16 +12,13 @@ import {
   vector,
   serial,
   varchar,
+  decimal,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import type { AdapterAccountType } from "next-auth/adapters";
 import { relations, sql } from "drizzle-orm";
-
-const connectionString = "postgres://postgres:postgres@localhost:5432/drizzle";
-const pool = postgres(connectionString, { max: 1 });
-
-export const db = drizzle(pool);
 
 export const users = pgTable("user", {
   id: text("id")
@@ -185,8 +182,6 @@ export const usersRelations = relations(users, ({ many }) => ({
   integrations: many(integrations),
 }));
 
-
-
 export const documents = pgTable(
   "documents",
   {
@@ -347,3 +342,91 @@ export const embeddingJobs = pgTable(
 );
 
 export type Document = typeof documents.$inferInsert;
+
+export const leadStatusEnum = pgEnum("lead_status", [
+  "new",
+  "contacted",
+  "qualified",
+  "proposal",
+  "negotiation",
+  "won",
+  "lost",
+]);
+
+export const leadPriorityEnum = pgEnum("lead_priority", [
+  "high",
+  "medium",
+  "low",
+]);
+
+export const activityTypes = pgEnum("activity_type", [
+  "note",
+  "email",
+  "call",
+  "meeting",
+  "task",
+]);
+
+// Leads table
+export const leads = pgTable(
+  "leads",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    fullName: varchar("full_name", { length: 255 }).notNull(),
+    email: varchar("email", { length: 255 }).unique(),
+    phone: varchar("phone", { length: 20 }),
+    companyName: varchar("company_name", { length: 255 }),
+    jobTitle: varchar("job_title", { length: 255 }),
+    source: varchar("source", { length: 100 }),
+    tags: text("tags"),
+    status: leadStatusEnum("status").notNull().default("new"),
+    priority: leadPriorityEnum("priority").notNull().default("medium"),
+    value: decimal("value", { precision: 12, scale: 2 }),
+    assignedTo: text("assigned_to").references(() => users.id),
+    notes: text("notes"),
+    position: integer("position").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (leads) => ({
+    statusIdx: index("leads_status_idx").on(leads.status),
+    emailIdx: index("leads_email_idx").on(leads.email),
+    assignedToIdx: index("leads_assigned_to_idx").on(leads.assignedTo),
+    createdAtIdx: index("leads_created_at_idx").on(leads.createdAt),
+  })
+);
+
+// Activities table
+export const activities = pgTable(
+  "activities",
+  {
+    id: serial("id").primaryKey(),
+    leadId: text("lead_id")
+      .notNull()
+      .references(() => leads.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id),
+    type: activityTypes("type").notNull(),
+    title: varchar("title", { length: 255 }).notNull(),
+    description: text("description"),
+    completed: boolean("completed").notNull().default(false),
+    dueDate: timestamp("due_date", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (activities) => ({
+    leadIdIdx: index("activities_lead_id_idx").on(activities.leadId),
+    userIdIdx: index("activities_user_id_idx").on(activities.userId),
+    typeIdx: index("activities_type_idx").on(activities.type),
+    completedIdx: index("activities_completed_idx").on(activities.completed),
+  })
+);
