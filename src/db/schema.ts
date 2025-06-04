@@ -346,9 +346,6 @@ export type Document = typeof documents.$inferInsert;
 export const leadStatusEnum = pgEnum("lead_status", [
   "new",
   "contacted",
-  "qualified",
-  "proposal",
-  "negotiation",
   "won",
   "lost",
 ]);
@@ -367,7 +364,6 @@ export const activityTypes = pgEnum("activity_type", [
   "task",
 ]);
 
-// Leads table
 export const leads = pgTable(
   "leads",
   {
@@ -402,7 +398,7 @@ export const leads = pgTable(
   })
 );
 
-// Activities table
+
 export const activities = pgTable(
   "activities",
   {

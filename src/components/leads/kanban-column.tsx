@@ -13,9 +13,7 @@ import { getUserInfo } from "@/lib/leads/utils";
 import { LeadCard } from "./lead-card";
 import { EmptyColumn } from "./empty-column";
 
-/**
- * KanbanColumn component for individual columns in the Kanban board
- */
+
 export function KanbanColumn({
   column,
   users,

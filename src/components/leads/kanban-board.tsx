@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { DragDropContext } from "@hello-pangea/dnd";
 import { Sparkles, User, DollarSign, Building2 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,29 +17,39 @@ export function KanbanBoard({
   onLeadUpdate,
   onLeadClick,
 }: KanbanBoardProps) {
-  // Get status columns configuration
-  const statusColumns = getStatusColumns({
-    sparkles: <Sparkles className='h-4 w-4' />,
-    user: <User className='h-4 w-4' />,
-    dollarSign: <DollarSign className='h-4 w-4' />,
-    building: <Building2 className='h-4 w-4' />,
-  });
+  // Get status columns configuration using useMemo to prevent unnecessary recalculations
+  const statusColumns = useMemo(
+    () =>
+      getStatusColumns({
+        sparkles: <Sparkles className='h-4 w-4' />,
+        user: <User className='h-4 w-4' />,
+        dollarSign: <DollarSign className='h-4 w-4' />,
+        building: <Building2 className='h-4 w-4' />,
+      }),
+    []
+  );
 
-  // State to hold our columns with leads
-  const [columns, setColumns] = useState<Column[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // Initialize columns state with properly mapped data
+  const [columns, setColumns] = useState<Column[]>(() =>
+    statusColumns.map((col) => ({
+      ...col,
+      leads: initialLeads
+        .filter((lead) => lead.status === col.id)
+        .sort((a, b) => a.position - b.position),
+    }))
+  );
 
-  // Initialize columns with leads
+  // Update columns when initialLeads change
   useEffect(() => {
-    const initialColumns = statusColumns.map((col) => ({
+    // Map initialLeads to columns
+    const updatedColumns = statusColumns.map((col) => ({
       ...col,
       leads: initialLeads
         .filter((lead) => lead.status === col.id)
         .sort((a, b) => a.position - b.position),
     }));
 
-    setColumns(initialColumns);
-    setIsLoading(false);
+    setColumns(updatedColumns);
   }, [initialLeads, statusColumns]);
 
   // Handle drag end event
@@ -96,14 +106,6 @@ export function KanbanBoard({
     setColumns(newColumns);
     toast.success(`Lead moved to ${destination.droppableId}`);
   };
-
-  if (isLoading) {
-    return (
-      <div className='flex items-center justify-center h-64'>
-        <div className='animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
-      </div>
-    );
-  }
 
   return (
     <div className='p-4 lg:p-6 bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-[#191919] dark:via-[#141212e9] dark:to-[#171717] min-h-screen'>
