@@ -1,54 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { leads } from "@/db/schema";
-// import { auth } from "@/lib/auth";
+import { leadSchema } from "@/lib/schema";
+import { auth } from "@/auth";
+import { eq } from "drizzle-orm";
 
-// Mock data for development
-const MOCK_LEADS = [
-  {
-    id: 1,
-    fullName: "John Smith",
-    email: "john.smith@example.com",
-    phone: "555-123-4567",
-    companyName: "Acme Corp",
-    jobTitle: "CEO",
-    status: "new",
-    priority: "high",
-    value: 50000,
-    tags: ["enterprise", "saas"],
-    createdAt: new Date("2023-05-15"),
-    position: 0,
-  },
-  {
-    id: 2,
-    fullName: "Sarah Johnson",
-    email: "sarah@example.com",
-    phone: "555-987-6543",
-    companyName: "TechStart Inc",
-    jobTitle: "CTO",
-    status: "contacted",
-    priority: "medium",
-    value: 25000,
-    tags: ["startup", "tech"],
-    createdAt: new Date("2023-05-18"),
-    position: 0,
-  },
-  // Add more mock leads as needed
-];
+// Define a type for lead insertion
+type LeadInsert = typeof leads.$inferInsert;
 
 export async function GET(req: NextRequest) {
   try {
-    // In production, fetch from database
-    // const session = await auth();
-    // if (!session?.user) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
+    // Check authentication
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    // const result = await db.select().from(leads);
-    // return NextResponse.json(result);
+    // Fetch from database
+    const result = await db.select().from(leads);
+    return NextResponse.json(result);
 
-    // For development, return mock data
-    return NextResponse.json(MOCK_LEADS);
+    // For development, uncomment to use mock data
+    // return NextResponse.json(MOCK_LEADS);
   } catch (error) {
     console.error("Error fetching leads:", error);
     return NextResponse.json(
@@ -60,49 +33,82 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    // In production, insert into database
-    // const session = await auth();
-    // if (!session?.user) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
+    // Check authentication
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const body = await req.json();
 
-    // Validate required fields
-    if (!body.fullName) {
+    // Parse tags if they are a string
+    let parsedTags = body.tags;
+    if (typeof body.tags === "string") {
+      try {
+        parsedTags = JSON.parse(body.tags);
+      } catch (e) {
+        // If parsing fails, use the string as is
+        parsedTags = body.tags ? [body.tags] : [];
+      }
+    }
+
+    // Convert value to number if it's a string
+    let numericValue = null;
+    if (body.value) {
+      numericValue =
+        typeof body.value === "string" ? parseFloat(body.value) : body.value;
+
+      if (isNaN(numericValue)) {
+        numericValue = null;
+      }
+    }
+
+    // Prepare the data for validation
+    const leadData = {
+      ...body,
+      tags:
+        typeof parsedTags === "object"
+          ? JSON.stringify(parsedTags)
+          : parsedTags,
+      value: numericValue,
+    };
+
+    // Validate the lead data using Zod schema
+    const validationResult = leadSchema.safeParse(leadData);
+
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: "Full name is required" },
+        {
+          error: "Validation failed",
+          details: validationResult.error.format(),
+        },
         { status: 400 }
       );
     }
 
-    // In production, insert into database
-    // const result = await db.insert(leads).values({
-    //   fullName: body.fullName,
-    //   email: body.email,
-    //   phone: body.phone,
-    //   companyName: body.companyName,
-    //   jobTitle: body.jobTitle,
-    //   source: body.source,
-    //   campaign: body.campaign,
-    //   tags: body.tags || [],
-    //   status: body.status || "new",
-    //   priority: body.priority || "medium",
-    //   value: body.value,
-    //   assignedTo: body.assignedTo,
-    //   notes: body.notes,
-    //   position: body.position || 0,
-    // }).returning();
+    const validatedData = validationResult.data;
 
-    // For development, just return the created lead with a mock ID
-    const newLead = {
-      ...body,
-      id: Date.now(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+    // Create a properly typed lead object for insertion
+    const leadToInsert: LeadInsert = {
+      fullName: validatedData.fullName,
+      email: validatedData.email || null,
+      phone: validatedData.phone || null,
+      companyName: validatedData.companyName || null,
+      jobTitle: validatedData.jobTitle || null,
+      source: validatedData.source || null,
+      tags: validatedData.tags || null,
+      status: validatedData.status,
+      priority: validatedData.priority,
+      value: validatedData.value ? String(validatedData.value) : null,
+      assignedTo: validatedData.assignedTo || null,
+      notes: validatedData.notes || null,
+      position: validatedData.position,
     };
 
-    return NextResponse.json(newLead, { status: 201 });
+    // Insert into database
+    const result = await db.insert(leads).values(leadToInsert).returning();
+
+    return NextResponse.json(result[0], { status: 201 });
   } catch (error) {
     console.error("Error creating lead:", error);
     return NextResponse.json(

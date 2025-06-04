@@ -253,8 +253,44 @@ export function SheetViewer({
 
         // Update the handleAddToLeads function
         const handleAddToLeads = () => {
+          // Create a properly mapped object from row data to lead fields
+          // This maps the spreadsheet columns to the lead fields in a more intelligent way
+          const mappedRowData = {
+            // Map common spreadsheet column headers to lead fields
+            fullName:
+              row.original["Name"] ||
+              row.original["Full Name"] ||
+              row.original["Contact"] ||
+              row.getValue("col_0") ||
+              "",
+            email:
+              row.original["Email"] ||
+              row.original["Email Address"] ||
+              row.getValue("col_2") ||
+              "",
+            phone:
+              row.original["Phone"] ||
+              row.original["Phone Number"] ||
+              row.original["Contact Number"] ||
+              row.getValue("col_3") ||
+              "",
+            companyName:
+              row.original["Company"] ||
+              row.original["Company Name"] ||
+              row.original["Organization"] ||
+              row.getValue("col_1") ||
+              "",
+            jobTitle:
+              row.original["Job Title"] ||
+              row.original["Position"] ||
+              row.original["Title"] ||
+              "",
+            // Include all original data for reference
+            originalData: row.original,
+          };
+
           // Set the selected row data and show the lead creator
-          setSelectedRowData(row.original);
+          setSelectedRowData(mappedRowData);
           setShowLeadCreator(true);
         };
 
@@ -301,7 +337,7 @@ export function SheetViewer({
 
   const addNewRow = () => {
     const newData = [...editedData];
-    // Create a new empty row with the right number of columns
+
     const newRow = Array(headers.length).fill("");
     newData.push(newRow);
     setEditedData(newData);
@@ -390,10 +426,23 @@ export function SheetViewer({
             <LeadCreator
               rowData={selectedRowData}
               onCreateLead={async (lead) => {
-                if (onAddLead) {
-                  await onAddLead(lead);
+                try {
+                  // Save the lead to the database via the API
+                  const response = await axios.post("/api/leads", lead);
+
+                  // If successful, call the onAddLead callback if provided
+                  if (onAddLead) {
+                    await onAddLead(response.data);
+                  }
+
+                  toast.success("Lead successfully added to database");
+                  setShowLeadCreator(false);
+                } catch (error: any) {
+                  console.error("Error saving lead to database:", error);
+
+                  // Pass the error to the LeadCreator component to handle
+                  throw error;
                 }
-                setShowLeadCreator(false);
               }}
               onCancel={() => setShowLeadCreator(false)}
             />

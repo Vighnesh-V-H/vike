@@ -24,9 +24,7 @@ import { formatDistanceToNow } from "date-fns";
 import { LeadCardProps } from "@/lib/leads/types";
 import { formatCurrency, getPriorityColor } from "@/lib/leads/utils";
 
-/**
- * LeadCard component for individual lead cards in the Kanban board
- */
+
 export function LeadCard({
   lead,
   provided,
@@ -84,23 +82,49 @@ export function LeadCard({
             </DropdownMenu>
           </div>
 
-          {lead.tags && lead.tags.length > 0 && (
+          {lead.tags && (
             <div className='flex flex-wrap gap-1 mb-3'>
-              {lead.tags.slice(0, 2).map((tag) => (
-                <Badge
-                  key={tag}
-                  variant='secondary'
-                  className='text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors'>
-                  {tag}
-                </Badge>
-              ))}
-              {lead.tags.length > 2 && (
-                <Badge
-                  variant='secondary'
-                  className='text-xs bg-slate-100 text-slate-700 dark:bg-gray-700 dark:text-gray-300'>
-                  +{lead.tags.length - 2}
-                </Badge>
-              )}
+              {(() => {
+                try {
+                  // Try to parse tags if it's a JSON string
+                  const parsedTags =
+                    typeof lead.tags === "string" ? JSON.parse(lead.tags) : [];
+                  if (Array.isArray(parsedTags) && parsedTags.length > 0) {
+                    return (
+                      <>
+                        {parsedTags
+                          .slice(0, 2)
+                          .map((tag: string, index: number) => (
+                            <Badge
+                              key={`${tag}-${index}`}
+                              variant='secondary'
+                              className='text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors'>
+                              {tag}
+                            </Badge>
+                          ))}
+                        {parsedTags.length > 2 && (
+                          <Badge
+                            variant='secondary'
+                            className='text-xs bg-slate-100 text-slate-700 dark:bg-gray-700 dark:text-gray-300'>
+                            +{parsedTags.length - 2}
+                          </Badge>
+                        )}
+                      </>
+                    );
+                  }
+                } catch (e) {
+                  if (lead.tags) {
+                    return (
+                      <Badge
+                        variant='secondary'
+                        className='text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors'>
+                        {lead.tags}
+                      </Badge>
+                    );
+                  }
+                }
+                return null;
+              })()}
             </div>
           )}
 

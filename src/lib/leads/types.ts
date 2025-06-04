@@ -1,29 +1,24 @@
 import type React from "react";
 
-/**
- * Lead entity type
- */
+
 export interface Lead {
-  id: number;
+  id: string;
   fullName: string;
-  email?: string;
-  phone?: string;
-  companyName?: string;
-  jobTitle?: string;
+  email?: string | null;
+  phone?: string | null;
+  companyName?: string | null;
+  jobTitle?: string | null;
   status: string;
   priority?: string;
-  value?: number;
-  assignedTo?: string;
-  tags?: string[];
+  value?: string | null;
+  assignedTo?: string | null;
+  tags?: string | null;
+  notes?: string | null;
   createdAt: Date;
-  lastContactedAt?: Date;
-  nextFollowUpDate?: Date;
+  updatedAt?: Date;
   position: number;
 }
 
-/**
- * User type for leads
- */
 export interface UserType {
   id: string;
   name?: string;
@@ -31,9 +26,6 @@ export interface UserType {
   avatar?: string;
 }
 
-/**
- * Column type for Kanban board
- */
 export interface Column {
   id: string;
   title: string;
@@ -43,9 +35,6 @@ export interface Column {
   icon: React.ReactNode;
 }
 
-/**
- * Props for the KanbanBoard component
- */
 export interface KanbanBoardProps {
   initialLeads?: Lead[];
   users?: UserType[];
@@ -53,9 +42,6 @@ export interface KanbanBoardProps {
   onLeadClick?: (lead: Lead) => void;
 }
 
-/**
- * Props for the LeadCard component
- */
 export interface LeadCardProps {
   lead: Lead;
   provided: any; // DraggableProvided
@@ -64,18 +50,13 @@ export interface LeadCardProps {
   onClick: () => void;
 }
 
-/**
- * Props for the KanbanColumn component
- */
 export interface KanbanColumnProps {
   column: Column;
   users: UserType[];
   onLeadClick?: (lead: Lead) => void;
 }
 
-/**
- * Props for the EmptyColumn component
- */
+
 export interface EmptyColumnProps {
   icon: React.ReactNode;
 }

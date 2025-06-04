@@ -3,13 +3,16 @@ import { Lead, UserType } from "@/lib/leads/types";
 /**
  * Format currency for display
  */
-export const formatCurrency = (value?: number) => {
+export const formatCurrency = (value?: number | string | null) => {
   if (!value) return "";
+  const numericValue = typeof value === "string" ? parseFloat(value) : value;
+  if (isNaN(numericValue)) return "";
+
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
     minimumFractionDigits: 0,
-  }).format(value);
+  }).format(numericValue);
 };
 
 /**
@@ -56,22 +59,22 @@ export const getStatusColumns = (icon: {
     icon: icon.sparkles,
   },
   {
-    id: "ongoing",
-    title: "In Progress",
+    id: "contacted",
+    title: "Contacted",
     color: "from-purple-500 to-purple-600",
     gradient: "bg-gradient-to-br from-purple-50 to-purple-100/50",
     icon: icon.user,
   },
   {
-    id: "closed",
-    title: "Closed Won",
+    id: "won",
+    title: "Won",
     color: "from-emerald-500 to-emerald-600",
     gradient: "bg-gradient-to-br from-emerald-50 to-emerald-100/50",
     icon: icon.dollarSign,
   },
   {
     id: "lost",
-    title: "Closed Lost",
+    title: "Lost",
     color: "from-slate-400 to-slate-500",
     gradient: "bg-gradient-to-br from-slate-50 to-slate-100/50",
     icon: icon.building,

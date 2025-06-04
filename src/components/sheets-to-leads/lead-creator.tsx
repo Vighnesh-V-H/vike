@@ -17,7 +17,14 @@ import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
 
 interface LeadCreatorProps {
-  rowData: Record<string, any>;
+  rowData: {
+    fullName?: string;
+    companyName?: string;
+    email?: string;
+    phone?: string;
+    jobTitle?: string;
+    originalData?: Record<string, any>;
+  };
   onCreateLead: (lead: any) => Promise<void>;
   onCancel: () => void;
 }
@@ -28,10 +35,11 @@ export function LeadCreator({
   onCancel,
 }: LeadCreatorProps) {
   const [leadData, setLeadData] = useState({
-    fullName: rowData["col_0"] || "",
-    companyName: rowData["col_1"] || "",
-    email: rowData["col_2"] || "",
-    phone: rowData["col_3"] || "",
+    fullName: rowData.fullName || "",
+    companyName: rowData.companyName || "",
+    email: rowData.email || "",
+    phone: rowData.phone || "",
+    jobTitle: rowData.jobTitle || "",
     status: "new",
     priority: "medium",
     tags: [] as string[],
@@ -72,18 +80,56 @@ export function LeadCreator({
 
     setIsSubmitting(true);
     try {
+      // Format tags as a JSON string for the database
+      const formattedTags =
+        leadData.tags.length > 0 ? JSON.stringify(leadData.tags) : null;
+
+      // Create lead object with proper formatting for the API
       const lead = {
-        ...leadData,
-        id: Date.now(),
-        createdAt: new Date(),
+        fullName: leadData.fullName,
+        email: leadData.email,
+        phone: leadData.phone,
+        companyName: leadData.companyName,
+        jobTitle: leadData.jobTitle,
+        status: leadData.status,
+        priority: leadData.priority,
+        tags: formattedTags,
+        notes: leadData.notes,
+        source: "Google Sheet",
         position: 0,
       };
 
       await onCreateLead(lead);
       toast.success("Lead created successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating lead:", error);
-      toast.error("Failed to create lead");
+
+      // Handle validation errors specifically
+      if (error.response?.data?.error === "Validation failed") {
+        const details = error.response.data.details;
+        const errorMessages: string[] = [];
+
+        // Extract error messages from validation details
+        if (details) {
+          Object.entries(details).forEach(
+            ([field, fieldError]: [string, any]) => {
+              if (fieldError._errors && fieldError._errors.length > 0) {
+                errorMessages.push(
+                  `${field}: ${fieldError._errors.join(", ")}`
+                );
+              }
+            }
+          );
+        }
+
+        if (errorMessages.length > 0) {
+          toast.error(`Validation errors: ${errorMessages.join("; ")}`);
+        } else {
+          toast.error("Failed to create lead: Validation error");
+        }
+      } else {
+        toast.error("Failed to create lead");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -139,6 +185,16 @@ export function LeadCreator({
           </div>
 
           <div className='space-y-2'>
+            <Label htmlFor='jobTitle'>Job Title</Label>
+            <Input
+              id='jobTitle'
+              value={leadData.jobTitle}
+              onChange={(e) => handleInputChange("jobTitle", e.target.value)}
+              placeholder='Software Engineer'
+            />
+          </div>
+
+          <div className='space-y-2'>
             <Label htmlFor='status'>Status</Label>
             <Select
               value={leadData.status}
@@ -149,9 +205,6 @@ export function LeadCreator({
               <SelectContent>
                 <SelectItem value='new'>New</SelectItem>
                 <SelectItem value='contacted'>Contacted</SelectItem>
-                <SelectItem value='qualified'>Qualified</SelectItem>
-                <SelectItem value='proposal'>Proposal</SelectItem>
-                <SelectItem value='negotiation'>Negotiation</SelectItem>
                 <SelectItem value='won'>Won</SelectItem>
                 <SelectItem value='lost'>Lost</SelectItem>
               </SelectContent>
