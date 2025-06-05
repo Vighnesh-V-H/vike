@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { LeadCreator } from "@/components/sheets-to-leads/lead-creator";
 
 interface SheetViewerProps {
@@ -421,16 +421,15 @@ export function SheetViewer({
 
       {/* Add the dialog for the lead creator */}
       <Dialog open={showLeadCreator} onOpenChange={setShowLeadCreator}>
+        <DialogTitle className='hidden'>Add To Leads</DialogTitle>
         <DialogContent className='sm:max-w-[800px]'>
           {selectedRowData && (
             <LeadCreator
               rowData={selectedRowData}
               onCreateLead={async (lead) => {
                 try {
-                  // Save the lead to the database via the API
                   const response = await axios.post("/api/leads", lead);
 
-                  // If successful, call the onAddLead callback if provided
                   if (onAddLead) {
                     await onAddLead(response.data);
                   }

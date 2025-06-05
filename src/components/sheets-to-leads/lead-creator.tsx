@@ -109,7 +109,6 @@ export function LeadCreator({
         const details = error.response.data.details;
         const errorMessages: string[] = [];
 
-        // Extract error messages from validation details
         if (details) {
           Object.entries(details).forEach(
             ([field, fieldError]: [string, any]) => {

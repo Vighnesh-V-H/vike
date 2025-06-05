@@ -43,29 +43,12 @@ import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Lead, UserType } from "@/lib/leads/types";
 
 // Types
-interface Lead {
-  id: number;
-  fullName: string;
-  email?: string;
-  status: string;
-  priority?: string;
-  value?: number;
-  assignedTo?: string;
-  createdAt: Date;
-}
-
-interface User {
-  id: string;
-  name?: string;
-  email: string;
-  avatar?: string;
-}
-
 interface DashboardProps {
   leads: Lead[];
-  users?: User[];
+  users?: UserType[];
   dateRange?: { from: Date; to: Date };
   onDateRangeChange?: (range: { from: Date; to: Date }) => void;
 }
@@ -87,7 +70,10 @@ export function Dashboard({
   const wonLeads = leads.filter((lead) => lead.status === "won").length;
 
   // Calculate total potential value
-  const totalValue = leads.reduce((sum, lead) => sum + (lead.value || 0), 0);
+  const totalValue = leads.reduce((sum, lead) => {
+    const value = lead.value ? parseFloat(lead.value) : 0;
+    return sum + value;
+  }, 0);
 
   // Calculate conversion rate
   const conversionRate =
@@ -170,18 +156,25 @@ export function Dashboard({
 
   // Recent high-value leads
   const highValueLeads = [...leads]
-    .filter((lead) => (lead.value || 0) > 0)
-    .sort((a, b) => (b.value || 0) - (a.value || 0))
+    .filter((lead) => (lead.value ? parseFloat(lead.value) > 0 : false))
+    .sort((a, b) => {
+      const valueA = a.value ? parseFloat(a.value) : 0;
+      const valueB = b.value ? parseFloat(b.value) : 0;
+      return valueB - valueA;
+    })
     .slice(0, 5);
 
   // Format currency
-  const formatCurrency = (value?: number) => {
+  const formatCurrency = (value?: string | number | null) => {
     if (!value) return "$0";
+    const numValue =
+      typeof value === "string" ? parseFloat(value) : Number(value);
+    if (isNaN(numValue)) return "$0";
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 0,
-    }).format(value);
+    }).format(numValue);
   };
 
   // Format date
@@ -275,7 +268,7 @@ export function Dashboard({
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
-              {formatCurrency(totalValue)}
+              {formatCurrency(totalValue.toString())}
             </div>
             <p className='text-xs text-muted-foreground'>
               +12% from last month
