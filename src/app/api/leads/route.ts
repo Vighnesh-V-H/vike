@@ -3,25 +3,104 @@ import { db } from "@/db";
 import { leads } from "@/db/schema";
 import { leadSchema } from "@/lib/schema";
 import { auth } from "@/auth";
-import { eq } from "drizzle-orm";
+import { eq, and, gte, lte } from "drizzle-orm";
+import { type Lead } from "@/lib/leads/types";
 
-// Define a type for lead insertion
 type LeadInsert = typeof leads.$inferInsert;
 
 export async function GET(req: NextRequest) {
   try {
-    // Check authentication
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch from database
-    const result = await db.select().from(leads);
-    return NextResponse.json(result);
+    const { searchParams } = new URL(req.url);
+    const fromParam = searchParams.get("from");
+    const toParam = searchParams.get("to");
 
-    // For development, uncomment to use mock data
-    // return NextResponse.json(MOCK_LEADS);
+    if (fromParam && toParam) {
+      let from: Date, to: Date;
+      try {
+        from = new Date(fromParam);
+        to = new Date(toParam);
+
+        if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+          throw new Error("Invalid date format");
+        }
+      } catch (error) {
+        return NextResponse.json(
+          { error: "Invalid date format" },
+          { status: 400 }
+        );
+      }
+
+      const fetchedLeads = await db
+        .select()
+        .from(leads)
+        .where(and(gte(leads.createdAt, from), lte(leads.createdAt, to)))
+        .orderBy(leads.createdAt);
+
+      const transformedLeads = fetchedLeads.map((lead) => {
+        let parsedTags = null;
+        if (lead.tags) {
+          try {
+            parsedTags = JSON.parse(lead.tags);
+          } catch (e) {
+            parsedTags = lead.tags;
+          }
+        }
+
+        return {
+          id: lead.id,
+          fullName: lead.fullName,
+          email: lead.email,
+          phone: lead.phone,
+          companyName: lead.companyName,
+          jobTitle: lead.jobTitle,
+          status: lead.status,
+          priority: lead.priority || "medium",
+          value: lead.value ? String(lead.value) : null,
+          tags: parsedTags,
+          createdAt: lead.createdAt,
+          updatedAt: lead.updatedAt,
+          position: lead.position,
+        } as Lead;
+      });
+
+      return NextResponse.json(transformedLeads);
+    }
+
+    const result = await db.select().from(leads);
+
+    const transformedLeads = result.map((lead) => {
+      let parsedTags = null;
+      if (lead.tags) {
+        try {
+          parsedTags = JSON.parse(lead.tags);
+        } catch (e) {
+          parsedTags = lead.tags;
+        }
+      }
+
+      return {
+        id: lead.id,
+        fullName: lead.fullName,
+        email: lead.email,
+        phone: lead.phone,
+        companyName: lead.companyName,
+        jobTitle: lead.jobTitle,
+        status: lead.status,
+        priority: lead.priority || "medium",
+        value: lead.value ? String(lead.value) : null,
+        tags: parsedTags,
+        createdAt: lead.createdAt,
+        updatedAt: lead.updatedAt,
+        position: lead.position,
+      } as Lead;
+    });
+
+    return NextResponse.json(transformedLeads);
   } catch (error) {
     console.error("Error fetching leads:", error);
     return NextResponse.json(
@@ -33,7 +112,6 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    // Check authentication
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -41,18 +119,15 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    // Parse tags if they are a string
     let parsedTags = body.tags;
     if (typeof body.tags === "string") {
       try {
         parsedTags = JSON.parse(body.tags);
       } catch (e) {
-        // If parsing fails, use the string as is
         parsedTags = body.tags ? [body.tags] : [];
       }
     }
 
-    // Convert value to number if it's a string
     let numericValue = null;
     if (body.value) {
       numericValue =
@@ -63,7 +138,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Prepare the data for validation
     const leadData = {
       ...body,
       tags:
@@ -73,7 +147,6 @@ export async function POST(req: NextRequest) {
       value: numericValue,
     };
 
-    // Validate the lead data using Zod schema
     const validationResult = leadSchema.safeParse(leadData);
 
     if (!validationResult.success) {
@@ -88,7 +161,6 @@ export async function POST(req: NextRequest) {
 
     const validatedData = validationResult.data;
 
-    // Create a properly typed lead object for insertion
     const leadToInsert: LeadInsert = {
       fullName: validatedData.fullName,
       email: validatedData.email || null,
@@ -105,7 +177,6 @@ export async function POST(req: NextRequest) {
       position: validatedData.position,
     };
 
-    // Insert into database
     const result = await db.insert(leads).values(leadToInsert).returning();
 
     return NextResponse.json(result[0], { status: 201 });

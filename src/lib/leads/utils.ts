@@ -35,7 +35,7 @@ export const getPriorityColor = (priority?: string) => {
  * Get user information for a given user ID
  */
 export const getUserInfo = (
-  userId: string | undefined,
+  userId: string | null | undefined,
   users: UserType[]
 ): UserType | null => {
   if (!userId) return null;

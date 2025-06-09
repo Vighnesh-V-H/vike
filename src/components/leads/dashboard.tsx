@@ -43,19 +43,17 @@ import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Lead, UserType } from "@/lib/leads/types";
+import { Lead } from "@/lib/leads/types";
 
 // Types
 interface DashboardProps {
   leads: Lead[];
-  users?: UserType[];
   dateRange?: { from: Date; to: Date };
   onDateRangeChange?: (range: { from: Date; to: Date }) => void;
 }
 
 export function Dashboard({
   leads = [],
-  users = [],
   dateRange,
   onDateRangeChange,
 }: DashboardProps) {
@@ -138,22 +136,6 @@ export function Dashboard({
     { name: "Sun", value: 3 },
   ];
 
-  // Top performing users
-  const topUsers = users
-    .map((user) => {
-      const userLeads = leads.filter((lead) => lead.assignedTo === user.id);
-      const userWon = userLeads.filter((lead) => lead.status === "won").length;
-      return {
-        ...user,
-        totalLeads: userLeads.length,
-        wonLeads: userWon,
-        conversionRate:
-          userLeads.length > 0 ? (userWon / userLeads.length) * 100 : 0,
-      };
-    })
-    .sort((a, b) => b.wonLeads - a.wonLeads)
-    .slice(0, 5);
-
   // Recent high-value leads
   const highValueLeads = [...leads]
     .filter((lead) => (lead.value ? parseFloat(lead.value) > 0 : false))
@@ -183,12 +165,6 @@ export function Dashboard({
       month: "short",
       day: "numeric",
     }).format(new Date(date));
-  };
-
-  // Get user info
-  const getUserInfo = (userId?: string) => {
-    if (!userId) return null;
-    return users.find((user) => user.id === userId);
   };
 
   return (
@@ -344,39 +320,32 @@ export function Dashboard({
               </CardContent>
             </Card>
 
-            {/* Top performers */}
+            {/* Remove Top performers section that depends on users */}
             <Card className='col-span-1 lg:col-span-3'>
               <CardHeader>
-                <CardTitle>Top Performers</CardTitle>
-                <CardDescription>
-                  Team members with highest conversions
-                </CardDescription>
+                <CardTitle>Lead Statistics</CardTitle>
+                <CardDescription>Summary of lead performance</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className='space-y-4'>
-                  {topUsers.map((user) => (
-                    <div key={user.id} className='flex items-center'>
-                      <Avatar className='h-9 w-9 mr-3'>
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>
-                          {user.name?.charAt(0) ||
-                            user.email.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className='flex-1 space-y-1'>
-                        <div className='flex items-center justify-between'>
-                          <p className='text-sm font-medium'>
-                            {user.name || user.email}
-                          </p>
-                          <Badge variant='outline'>{user.wonLeads} won</Badge>
-                        </div>
-                        <Progress value={user.conversionRate} className='h-2' />
-                        <p className='text-xs text-muted-foreground'>
-                          {user.conversionRate.toFixed(0)}% conversion rate
-                        </p>
-                      </div>
+                  <div className='grid grid-cols-2 gap-2'>
+                    <div className='bg-muted rounded-md p-3'>
+                      <p className='text-sm font-medium'>New Leads</p>
+                      <p className='text-2xl font-bold'>{newLeads}</p>
                     </div>
-                  ))}
+                    <div className='bg-muted rounded-md p-3'>
+                      <p className='text-sm font-medium'>Qualified</p>
+                      <p className='text-2xl font-bold'>{qualifiedLeads}</p>
+                    </div>
+                    <div className='bg-muted rounded-md p-3'>
+                      <p className='text-sm font-medium'>Won</p>
+                      <p className='text-2xl font-bold'>{wonLeads}</p>
+                    </div>
+                    <div className='bg-muted rounded-md p-3'>
+                      <p className='text-sm font-medium'>Conversion</p>
+                      <p className='text-2xl font-bold'>{conversionRate}%</p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -432,39 +401,34 @@ export function Dashboard({
               </CardHeader>
               <CardContent>
                 <div className='space-y-4'>
-                  {highValueLeads.map((lead) => {
-                    const user = getUserInfo(lead.assignedTo);
-                    return (
-                      <div
-                        key={lead.id}
-                        className='flex items-center justify-between'>
-                        <div className='flex items-center'>
-                          <div className='mr-3'>
-                            <Badge
-                              variant='outline'
-                              className={`${
-                                lead.status === "won"
-                                  ? "border-green-500 text-green-500"
-                                  : "border-amber-500 text-amber-500"
-                              }`}>
-                              {lead.status}
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className='text-sm font-medium'>
-                              {lead.fullName}
-                            </p>
-                            <p className='text-xs text-muted-foreground'>
-                              {formatDate(lead.createdAt)}
-                            </p>
-                          </div>
+                  {highValueLeads.map((lead) => (
+                    <div
+                      key={lead.id}
+                      className='flex items-center justify-between'>
+                      <div className='flex items-center'>
+                        <div className='mr-3'>
+                          <Badge
+                            variant='outline'
+                            className={`${
+                              lead.status === "won"
+                                ? "border-green-500 text-green-500"
+                                : "border-amber-500 text-amber-500"
+                            }`}>
+                            {lead.status}
+                          </Badge>
                         </div>
-                        <div className='text-sm font-medium'>
-                          {formatCurrency(lead.value)}
+                        <div>
+                          <p className='text-sm font-medium'>{lead.fullName}</p>
+                          <p className='text-xs text-muted-foreground'>
+                            {formatDate(lead.createdAt)}
+                          </p>
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className='text-sm font-medium'>
+                        {formatCurrency(lead.value)}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
