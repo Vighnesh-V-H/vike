@@ -6,6 +6,7 @@ import { testimonials } from "@/lib/constants";
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Testimonials() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -317,6 +318,14 @@ export default function Testimonials() {
             </p>
           </div>
         </motion.div>
+
+        <div className='text-center mt-12'>
+          <Link href='/customers'>
+            <Button variant='outline' size='lg'>
+              View All Customer Stories
+            </Button>
+          </Link>
+        </div>
       </div>
     </section>
   );

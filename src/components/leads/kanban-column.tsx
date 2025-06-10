@@ -49,7 +49,9 @@ export function KanbanColumn({
               ref={provided.innerRef}>
               <div className='space-y-3 min-h-[500px]'>
                 {column.leads.map((lead, index) => {
-                  const assignedUser = getUserInfo(lead.assignedTo, users);
+                  const assignedUser = lead.assignedTo
+                    ? getUserInfo(lead.assignedTo, users)
+                    : null;
 
                   return (
                     <Draggable

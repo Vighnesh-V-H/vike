@@ -103,6 +103,9 @@ function FeatureCard({
     }
   };
 
+  // Create a URL-friendly slug from the feature title
+  const featureSlug = feature.title.toLowerCase().replace(/\s+/g, "-");
+
   return (
     <motion.div
       className={`${colSpan} group`}
