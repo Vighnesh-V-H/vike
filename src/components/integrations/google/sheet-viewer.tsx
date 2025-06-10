@@ -4,16 +4,37 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCcw, Save, Plus } from "lucide-react";
+import {
+  RefreshCcw,
+  Save,
+  Plus,
+  MoreHorizontal,
+  Copy,
+  Edit,
+  Trash2,
+  Eye,
+} from "lucide-react";
 import { DataTable } from "@/components/data-table";
 import { Input } from "@/components/ui/input";
 import type { ColumnDef } from "@tanstack/react-table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { LeadCreator } from "@/components/sheets-to-leads/lead-creator";
 
 interface SheetViewerProps {
   sheetId: string;
   sheetName?: string;
   range?: string;
   editable?: boolean;
+  onAddLead?: (lead: any) => Promise<void>;
 }
 
 export function SheetViewer({
@@ -21,12 +42,18 @@ export function SheetViewer({
   sheetName = "Untitled Sheet",
   range = "Sheet1!A1:Z1000",
   editable = false,
+  onAddLead,
 }: SheetViewerProps) {
   const [data, setData] = useState<any[][]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentRange, setCurrentRange] = useState<string>(range);
   const [editedData, setEditedData] = useState<any[][]>([]);
+  const [showLeadCreator, setShowLeadCreator] = useState<boolean>(false);
+  const [selectedRowData, setSelectedRowData] = useState<Record<
+    string,
+    any
+  > | null>(null);
 
   const fetchSheetData = useCallback(async () => {
     setLoading(true);
@@ -82,7 +109,7 @@ export function SheetViewer({
         values: editedData,
       });
       alert("Changes saved successfully");
-      fetchSheetData(); 
+      fetchSheetData();
     } catch (err: any) {
       alert(
         "Error saving changes: " +
@@ -91,7 +118,6 @@ export function SheetViewer({
     }
   };
 
-  // Get column headers from the first row of data or generate if needed
   const headers = useMemo(() => {
     if (!data || data.length === 0) return [];
 
@@ -138,7 +164,6 @@ export function SheetViewer({
 
       // Process each cell in the row and assign it to the corresponding header
       headers.forEach((header, colIndex) => {
-        // Safely get cell value, handling undefined or null
         const cellValue = colIndex < row.length ? row[colIndex] : "";
         rowData[header] = cellValue;
       });
@@ -152,16 +177,15 @@ export function SheetViewer({
 
   // Generate columns for the data table
   const columns = useMemo<ColumnDef<any>[]>(() => {
-    return headers.map((header, columnIndex) => {
-      // Use a sanitized ID for the accessor to avoid dot notation issues
+    const baseColumns = headers.map((header, columnIndex) => {
       const accessorId = `col_${columnIndex}`;
 
       return {
         id: accessorId,
-        accessorFn: (row) => row[header], // Use accessorFn instead of accessorKey
+        accessorFn: (row: Record<string, any>) => row[header], // Use accessorFn instead of accessorKey
         header: header,
         cell: editable
-          ? ({ row }) => {
+          ? ({ row }: { row: { index: number } }) => {
               const rowIndex = row.index;
               // In edit mode, we need to add 1 to the index because we're skipping the header row
               const dataRowIndex = rowIndex + 1;
@@ -183,96 +207,247 @@ export function SheetViewer({
                 />
               );
             }
-          : ({ getValue }) => {
+          : ({ getValue }: { getValue: () => any }) => {
               // For view mode, just display the value
               const value = getValue() as string;
               return value;
             },
       };
     });
+
+    // Add actions column
+    const actionsColumn: ColumnDef<any> = {
+      id: "actions",
+      header: "Actions",
+      enableHiding: false,
+      cell: ({ row }: { row: any }) => {
+        const rowIndex = row.index;
+        const dataRowIndex = editable ? rowIndex + 1 : rowIndex;
+
+        const handleCopyRow = () => {
+          // Create a string representation of the row data
+          const rowData = headers
+            .map((header, idx) => {
+              return `${header}: ${row.getValue(`col_${idx}`) || ""}`;
+            })
+            .join("\n");
+
+          navigator.clipboard.writeText(rowData);
+          toast.success("Copied to clipboard", {
+            description: "Row data has been copied to clipboard",
+          });
+        };
+
+        const handleDeleteRow = () => {
+          if (!editable) return;
+
+          const newData = [...editedData];
+          // Remove the row at dataRowIndex
+          newData.splice(dataRowIndex, 1);
+          setEditedData(newData);
+
+          toast.success("Row deleted", {
+            description: "The row will be deleted when you save changes",
+          });
+        };
+
+        // Update the handleAddToLeads function
+        const handleAddToLeads = () => {
+          // Create a properly mapped object from row data to lead fields
+          // This maps the spreadsheet columns to the lead fields in a more intelligent way
+          const mappedRowData = {
+            // Map common spreadsheet column headers to lead fields
+            fullName:
+              row.original["Name"] ||
+              row.original["Full Name"] ||
+              row.original["Contact"] ||
+              row.getValue("col_0") ||
+              "",
+            email:
+              row.original["Email"] ||
+              row.original["Email Address"] ||
+              row.getValue("col_2") ||
+              "",
+            phone:
+              row.original["Phone"] ||
+              row.original["Phone Number"] ||
+              row.original["Contact Number"] ||
+              row.getValue("col_3") ||
+              "",
+            companyName:
+              row.original["Company"] ||
+              row.original["Company Name"] ||
+              row.original["Organization"] ||
+              row.getValue("col_1") ||
+              "",
+            jobTitle:
+              row.original["Job Title"] ||
+              row.original["Position"] ||
+              row.original["Title"] ||
+              "",
+            // Include all original data for reference
+            originalData: row.original,
+          };
+
+          // Set the selected row data and show the lead creator
+          setSelectedRowData(mappedRowData);
+          setShowLeadCreator(true);
+        };
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant='ghost' className='h-8 w-8 p-0'>
+                <span className='sr-only'>Open menu</span>
+                <MoreHorizontal className='h-4 w-4' />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end'>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuItem onClick={handleCopyRow}>
+                <Copy className='h-4 w-4 mr-2' />
+                Copy row data
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleAddToLeads}>
+                <Plus className='h-4 w-4 mr-2' />
+                Add to Leads
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {editable ? (
+                <>
+                  <DropdownMenuItem onClick={handleDeleteRow}>
+                    <Trash2 className='h-4 w-4 mr-2' />
+                    Delete row
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <DropdownMenuItem onClick={() => {}}>
+                  <Eye className='h-4 w-4 mr-2' />
+                  View details
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    };
+
+    return [...baseColumns, actionsColumn];
   }, [headers, editedData, editable]);
 
   const addNewRow = () => {
     const newData = [...editedData];
-    // Create a new empty row with the right number of columns
+
     const newRow = Array(headers.length).fill("");
     newData.push(newRow);
     setEditedData(newData);
   };
 
   return (
-    <Card className='w-full'>
-      <CardHeader className='pb-3'>
-        <CardTitle className='flex items-center justify-between'>
-          <div className='text-xl font-semibold'>{sheetName}</div>
-          <div className='flex space-x-2'>
-            {editable && (
-              <>
-                <Button onClick={addNewRow} variant='outline' size='sm'>
-                  <Plus className='h-4 w-4 mr-2' />
-                  Add Row
-                </Button>
-                <Button onClick={handleSave} variant='outline' size='sm'>
-                  <Save className='h-4 w-4 mr-2' />
-                  Save Changes
-                </Button>
-              </>
-            )}
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={fetchSheetData}
-              disabled={loading}>
-              <RefreshCcw className='h-4 w-4 mr-2' />
-              Refresh
-            </Button>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className='text-center py-4'>Loading sheet data...</div>
-        ) : error ? (
-          <div className='text-center text-red-500 py-4'>{error}</div>
-        ) : data.length === 0 ? (
-          <div className='text-center py-4'>
-            <p>No data found in this sheet.</p>
-            {editable && (
+    <>
+      <Card className='w-full'>
+        <CardHeader className='pb-3'>
+          <CardTitle className='flex items-center justify-between'>
+            <div className='text-xl font-semibold'>{sheetName}</div>
+            <div className='flex space-x-2'>
+              {editable && (
+                <>
+                  <Button onClick={addNewRow} variant='outline' size='sm'>
+                    <Plus className='h-4 w-4 mr-2' />
+                    Add Row
+                  </Button>
+                  <Button onClick={handleSave} variant='outline' size='sm'>
+                    <Save className='h-4 w-4 mr-2' />
+                    Save Changes
+                  </Button>
+                </>
+              )}
               <Button
-                onClick={fetchSheetData}
                 variant='outline'
                 size='sm'
-                className='mt-2'>
-                Create Template Sheet
+                onClick={fetchSheetData}
+                disabled={loading}>
+                <RefreshCcw className='h-4 w-4 mr-2' />
+                Refresh
               </Button>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className='mb-4 flex justify-between items-center'>
-              <p className='text-sm text-muted-foreground'>
-                {editable
-                  ? `Showing ${tableData.length} rows. First row is used as column headers.`
-                  : `Showing all ${tableData.length} rows from the sheet.`}
-              </p>
-              <p className='text-sm text-muted-foreground'>
-                {headers.length} columns
-              </p>
             </div>
-
-            <DataTable columns={columns} data={tableData} />
-
-            {tableData.length === 0 && (
-              <div className='text-center py-4'>
-                <p>
-                  No data rows found.{" "}
-                  {editable ? "Click 'Add Row' to add data." : ""}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className='text-center py-4'>Loading sheet data...</div>
+          ) : error ? (
+            <div className='text-center text-red-500 py-4'>{error}</div>
+          ) : data.length === 0 ? (
+            <div className='text-center py-4'>
+              <p>No data found in this sheet.</p>
+              {editable && (
+                <Button
+                  onClick={fetchSheetData}
+                  variant='outline'
+                  size='sm'
+                  className='mt-2'>
+                  Create Template Sheet
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className='mb-4 flex justify-between items-center'>
+                <p className='text-sm text-muted-foreground'>
+                  {editable
+                    ? `Showing ${tableData.length} rows. First row is used as column headers.`
+                    : `Showing all ${tableData.length} rows from the sheet.`}
+                </p>
+                <p className='text-sm text-muted-foreground'>
+                  {headers.length} columns
                 </p>
               </div>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+
+              <DataTable columns={columns} data={tableData} />
+
+              {tableData.length === 0 && (
+                <div className='text-center py-4'>
+                  <p>
+                    No data rows found.{" "}
+                    {editable ? "Click 'Add Row' to add data." : ""}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Add the dialog for the lead creator */}
+      <Dialog open={showLeadCreator} onOpenChange={setShowLeadCreator}>
+        <DialogTitle className='hidden'>Add To Leads</DialogTitle>
+        <DialogContent className='sm:max-w-[800px]'>
+          {selectedRowData && (
+            <LeadCreator
+              rowData={selectedRowData}
+              onCreateLead={async (lead) => {
+                try {
+                  const response = await axios.post("/api/leads", lead);
+
+                  if (onAddLead) {
+                    await onAddLead(response.data);
+                  }
+
+                  toast.success("Lead successfully added to database");
+                  setShowLeadCreator(false);
+                } catch (error: any) {
+                  console.error("Error saving lead to database:", error);
+
+                  // Pass the error to the LeadCreator component to handle
+                  throw error;
+                }
+              }}
+              onCancel={() => setShowLeadCreator(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

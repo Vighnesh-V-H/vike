@@ -6,8 +6,19 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Github, Twitter } from "lucide-react";
+import { FormEvent, useState } from "react";
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    // Handle newsletter subscription
+    console.log("Subscribing email:", email);
+    // Reset form
+    setEmail("");
+  };
+
   return (
     <footer className='bg-muted/30 border-t'>
       <div className='container px-4 md:px-6 py-16'>
@@ -29,13 +40,19 @@ export default function Footer() {
               </p>
               <div className='flex space-x-4'>
                 <Button variant='ghost' size='icon' asChild>
-                  <Link href='#'>
+                  <Link
+                    href='https://github.com'
+                    target='_blank'
+                    rel='noopener noreferrer'>
                     <Github className='h-5 w-5' />
                     <span className='sr-only'>GitHub</span>
                   </Link>
                 </Button>
                 <Button variant='ghost' size='icon' asChild>
-                  <Link href='#'>
+                  <Link
+                    href='https://twitter.com'
+                    target='_blank'
+                    rel='noopener noreferrer'>
                     <Twitter className='h-5 w-5' />
                     <span className='sr-only'>Twitter</span>
                   </Link>
@@ -119,14 +136,19 @@ export default function Footer() {
                 ))}
               </div>
             </div>
-            <div className='flex gap-2 w-full md:w-auto max-w-sm'>
+            <form
+              onSubmit={handleSubmit}
+              className='flex gap-2 w-full md:w-auto max-w-sm'>
               <Input
                 type='email'
                 placeholder='Enter your email'
                 className='max-w-xs'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
-              <Button>Subscribe</Button>
-            </div>
+              <Button type='submit'>Subscribe</Button>
+            </form>
           </div>
         </motion.div>
       </div>

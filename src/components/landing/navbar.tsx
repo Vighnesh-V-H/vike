@@ -49,7 +49,10 @@ export default function Navbar() {
 
         <div className=' md:flex items-center gap-4'>
           <div className='hidden md:flex items-center gap-4'>
-            <ThemeToggle /> <Button size='sm'>Get Started</Button>
+            <ThemeToggle />
+            <Link href='/signup'>
+              <Button size='sm'>Get Started</Button>
+            </Link>
           </div>
 
           <Link href={"/signin"}>
@@ -86,12 +89,16 @@ export default function Navbar() {
               <div className='flex justify-start py-2'>
                 <ThemeToggle />
               </div>
-              <Button variant='outline' size='sm' className='w-full'>
-                Log in
-              </Button>
-              <Button size='sm' className='w-full'>
-                Get Started
-              </Button>
+              <Link href='/signin'>
+                <Button variant='outline' size='sm' className='w-full'>
+                  Log in
+                </Button>
+              </Link>
+              <Link href='/signup'>
+                <Button size='sm' className='w-full'>
+                  Get Started
+                </Button>
+              </Link>
             </div>
           </nav>
         </div>
