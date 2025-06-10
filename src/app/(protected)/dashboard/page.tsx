@@ -1,5 +1,5 @@
-function Dashboard() {
-  return <div>dashboard</div>;
-}
+import { DashboardContainer } from "@/components/leads/dashboard-container";
 
-export default Dashboard;
+export default function DashboardPage() {
+  return <DashboardContainer />;
+}

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { motion } from "motion/react";
+import Link from "next/link";
 
 export default function Hero() {
   return (
@@ -79,18 +80,22 @@ export default function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}>
-              <Button
-                size='lg'
-                className='gap-1 group transition-all duration-300 hover:pr-6'>
-                Get Started
-                <ArrowRight className='h-4 w-4 group-hover:translate-x-1 transition-transform' />
-              </Button>
-              <Button
-                size='lg'
-                variant='outline'
-                className='transition-all duration-300'>
-                Book a Demo
-              </Button>
+              <Link href='/signup'>
+                <Button
+                  size='lg'
+                  className='gap-1 group transition-all duration-300 hover:pr-6'>
+                  Get Started
+                  <ArrowRight className='h-4 w-4 group-hover:translate-x-1 transition-transform' />
+                </Button>
+              </Link>
+              <Link href='/contact?demo=true'>
+                <Button
+                  size='lg'
+                  variant='outline'
+                  className='transition-all duration-300'>
+                  Book a Demo
+                </Button>
+              </Link>
             </motion.div>
 
             <motion.div

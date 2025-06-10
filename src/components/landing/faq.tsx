@@ -5,6 +5,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { faqItems } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function FAQ() {
   return (
@@ -31,6 +33,15 @@ export default function FAQ() {
             </AccordionItem>
           ))}
         </Accordion>
+
+        <div className='mt-12 text-center'>
+          <p className='text-muted-foreground mb-4'>
+            Still have questions? Our team is here to help.
+          </p>
+          <Link href='/contact'>
+            <Button>Contact Us</Button>
+          </Link>
+        </div>
       </div>
     </section>
   );

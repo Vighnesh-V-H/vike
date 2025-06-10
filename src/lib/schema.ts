@@ -39,3 +39,19 @@ export const googleTaskSchema = z.object({
     .optional()
     .describe("the ID of the task list to insert into"),
 });
+
+export const leadSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().email("Invalid email format").optional().nullable(),
+  phone: z.string().optional().nullable(),
+  companyName: z.string().optional().nullable(),
+  jobTitle: z.string().optional().nullable(),
+  source: z.string().optional().nullable(),
+  tags: z.string().optional().nullable(),
+  status: z.enum(["new", "contacted", "won", "lost"]).default("new"),
+  priority: z.enum(["high", "medium", "low"]).default("medium"),
+  value: z.number().optional().nullable().or(z.string().optional().nullable()),
+  assignedTo: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  position: z.number().default(0),
+});

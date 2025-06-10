@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Sparkles } from "lucide-react";
 import { pricingPlans } from "@/lib/constants";
 import { motion } from "motion/react";
+import Link from "next/link";
 
 export default function Pricing() {
   return (
@@ -81,14 +82,21 @@ export default function Pricing() {
                     </motion.li>
                   ))}
                 </ul>
-                <Button
-                  size='lg'
-                  className={`w-full ${
-                    plan.popular ? "" : "bg-primary/90 hover:bg-primary"
-                  }`}
-                  variant={plan.buttonVariant || "default"}>
-                  {plan.buttonText}
-                </Button>
+                <Link
+                  href={
+                    plan.name === "Enterprise"
+                      ? "/contact?enterprise=true"
+                      : "/signup"
+                  }>
+                  <Button
+                    size='lg'
+                    className={`w-full ${
+                      plan.popular ? "" : "bg-primary/90 hover:bg-primary"
+                    }`}
+                    variant={plan.buttonVariant || "default"}>
+                    {plan.buttonText}
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           ))}
@@ -105,9 +113,11 @@ export default function Pricing() {
             Our enterprise plan can be tailored to meet your specific business
             needs. Contact our sales team for a personalized quote.
           </p>
-          <Button variant='outline' size='lg'>
-            Contact Sales
-          </Button>
+          <Link href='/contact?enterprise=true'>
+            <Button variant='outline' size='lg'>
+              Contact Sales
+            </Button>
+          </Link>
         </motion.div>
       </div>
     </section>
