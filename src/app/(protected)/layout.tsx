@@ -11,6 +11,7 @@ import { TooltipGlobal } from "@/components/tooltip-global";
 import Path from "@/components/path";
 import { SpotlightProvider } from "@/providers/modal-provider";
 import { Toaster } from "@/components/ui/sonner";
+import SpotlightOpen from "@/components/spotlight-open";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -34,6 +35,10 @@ function Layout({ children }: { children: React.ReactNode }) {
                 <Path />
               </div>
               <div className='flex items-center gap-3 mr-4'>
+                <div>
+                  <SpotlightOpen />
+                </div>
+
                 <ThemeToggle />
                 <NavUser />
               </div>
