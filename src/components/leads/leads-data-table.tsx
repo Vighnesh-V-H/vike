@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table";
-import { Lead, UserType } from "@/lib/leads/types";
+import { Lead } from "@/lib/leads/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,7 +28,6 @@ export function LeadsDataTable({
   onEditLead,
   onDeleteLead,
 }: LeadsDataTableProps) {
-  // Define columns for the leads data table
   const columns: ColumnDef<Lead>[] = [
     {
       accessorKey: "fullName",

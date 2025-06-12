@@ -2,9 +2,7 @@
 
 import { EmptyColumnProps } from "@/lib/leads/types";
 
-/**
- * EmptyColumn component for displaying empty state in Kanban columns
- */
+
 export function EmptyColumn({ icon }: EmptyColumnProps) {
   return (
     <div className='flex flex-col items-center justify-center h-32 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50 dark:border-gray-700 dark:bg-gray-800/30'>

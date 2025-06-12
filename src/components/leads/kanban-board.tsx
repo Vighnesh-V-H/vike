@@ -59,7 +59,7 @@ export function KanbanBoard({
     }
   };
 
-  // Fetch leads on initial load
+  
   useEffect(() => {
     fetchLeads();
   }, []);
@@ -76,7 +76,6 @@ export function KanbanBoard({
     setColumns(updatedColumns);
   }, [leads, statusColumns]);
 
-  // Handle drag end event
   const onDragEnd = async (result: any) => {
     const { destination, source, draggableId } = result;
 
@@ -88,11 +87,9 @@ export function KanbanBoard({
       return;
     }
 
-    // Extract the lead ID from the draggable ID
     const leadId = draggableId.replace("lead-", "");
     const sourceColumn = columns.find((col) => col.id === source.droppableId);
 
-    // Find the lead by ID, ensuring string comparison
     const lead = sourceColumn?.leads.find(
       (l) => String(l.id) === String(leadId)
     );
@@ -103,7 +100,6 @@ export function KanbanBoard({
       return;
     }
 
-    // Update columns in UI first (optimistic update)
     const newColumns = columns.map((column) => {
       if (column.id === source.droppableId) {
         const newLeads = [...column.leads];
@@ -130,33 +126,29 @@ export function KanbanBoard({
     setColumns(newColumns);
 
     try {
-      // Prepare updated lead data
       const updatedLead = {
         ...lead,
         status: destination.droppableId,
         position: destination.index,
       };
 
-      // Call onLeadUpdate callback if provided
       if (onLeadUpdate) {
         await onLeadUpdate(updatedLead);
       }
 
-      // Update lead in database through API
       await axios.post("/api/leads/update", {
-        id: lead.id, // Use the lead's actual ID
+        id: lead.id,
         status: destination.droppableId,
         position: destination.index,
       });
 
       toast.success(`Lead moved to ${destination.droppableId}`);
 
-      // Refresh leads to ensure we have the latest data
       fetchLeads();
     } catch (error) {
       console.error("Error updating lead:", error);
       toast.error("Failed to update lead status");
-      // Revert the UI change
+
       fetchLeads();
     }
   };

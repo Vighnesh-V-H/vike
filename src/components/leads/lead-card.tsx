@@ -86,7 +86,6 @@ export function LeadCard({
             <div className='flex flex-wrap gap-1 mb-3'>
               {(() => {
                 try {
-                  // Try to parse tags if it's a JSON string
                   const parsedTags =
                     typeof lead.tags === "string" ? JSON.parse(lead.tags) : [];
                   if (Array.isArray(parsedTags) && parsedTags.length > 0) {
