@@ -5,11 +5,11 @@ import { KanbanBoard } from "@/components/leads/kanban-board";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import axios from "axios";
-import { Lead, UserType } from "@/lib/leads/types";
+import { Lead } from "@/lib/leads/types";
 import { LeadsDataTable } from "@/components/leads/leads-data-table";
 import { LeadsHeader } from "@/components/leads/leads-header";
+import { LeadCreator } from "@/components/sheets-to-leads/lead-creator";
 
-// Define types
 interface GoogleSheet {
   id: string;
   name: string;
@@ -18,129 +18,6 @@ interface GoogleSheet {
   modifiedTime?: string;
 }
 
-// Mock data for initial development - will be replaced with API calls
-const MOCK_LEADS: Lead[] = [
-  {
-    id: "1",
-    fullName: "John Smith",
-    email: "john.smith@example.com",
-    phone: "555-123-4567",
-    companyName: "Acme Corp",
-    jobTitle: "CEO",
-    status: "new",
-    priority: "high",
-    value: "50000",
-    tags: "enterprise,saas",
-    createdAt: new Date("2023-05-15"),
-    position: 0,
-  },
-  {
-    id: "2",
-    fullName: "Sarah Johnson",
-    email: "sarah@example.com",
-    phone: "555-987-6543",
-    companyName: "TechStart Inc",
-    jobTitle: "CTO",
-    status: "contacted",
-    priority: "medium",
-    value: "25000",
-    tags: "startup,tech",
-    createdAt: new Date("2023-05-18"),
-    position: 0,
-  },
-  {
-    id: "3",
-    fullName: "Michael Brown",
-    email: "michael@example.com",
-    phone: "555-456-7890",
-    companyName: "Global Solutions",
-    jobTitle: "Procurement Manager",
-    status: "qualified",
-    priority: "medium",
-    value: "35000",
-    tags: "enterprise",
-    createdAt: new Date("2023-05-20"),
-    position: 0,
-  },
-  {
-    id: "4",
-    fullName: "Emily Davis",
-    email: "emily@example.com",
-    phone: "555-789-0123",
-    companyName: "Innovative Tech",
-    jobTitle: "Director of Operations",
-    status: "proposal",
-    priority: "high",
-    value: "75000",
-    tags: "tech,enterprise",
-    createdAt: new Date("2023-05-22"),
-    position: 0,
-  },
-  {
-    id: "5",
-    fullName: "David Wilson",
-    email: "david@example.com",
-    phone: "555-234-5678",
-    companyName: "Smart Solutions",
-    jobTitle: "CFO",
-    status: "negotiation",
-    priority: "high",
-    value: "100000",
-    tags: "finance,enterprise",
-    createdAt: new Date("2023-05-25"),
-    position: 0,
-  },
-  {
-    id: "6",
-    fullName: "Jennifer Lee",
-    email: "jennifer@example.com",
-    phone: "555-345-6789",
-    companyName: "Digital Marketing Pro",
-    jobTitle: "Marketing Director",
-    status: "won",
-    priority: "medium",
-    value: "45000",
-    tags: "marketing,smb",
-    createdAt: new Date("2023-05-28"),
-    position: 0,
-  },
-  {
-    id: "7",
-    fullName: "Robert Taylor",
-    email: "robert@example.com",
-    phone: "555-456-7890",
-    companyName: "Taylor Industries",
-    jobTitle: "Owner",
-    status: "lost",
-    priority: "low",
-    value: "15000",
-    tags: "manufacturing,smb",
-    createdAt: new Date("2023-05-30"),
-    position: 0,
-  },
-];
-
-const MOCK_USERS: UserType[] = [
-  {
-    id: "user1",
-    name: "Alex Johnson",
-    email: "alex@example.com",
-    avatar: "https://ui-avatars.com/api/?name=Alex+Johnson",
-  },
-  {
-    id: "user2",
-    name: "Morgan Smith",
-    email: "morgan@example.com",
-    avatar: "https://ui-avatars.com/api/?name=Morgan+Smith",
-  },
-  {
-    id: "user3",
-    name: "Taylor Brown",
-    email: "taylor@example.com",
-    avatar: "https://ui-avatars.com/api/?name=Taylor+Brown",
-  },
-];
-
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [sheets, setSheets] = useState<GoogleSheet[]>([]);
@@ -148,8 +25,16 @@ export default function LeadsPage() {
   const [sheetsError, setSheetsError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("kanban");
   const [isLoading, setIsLoading] = useState(false);
+  const [showLeadCreator, setShowLeadCreator] = useState(false);
 
-  // In a real app, this would fetch data from your API
+  const emptyLeadData = {
+    fullName: "",
+    companyName: "",
+    email: "",
+    phone: "",
+    jobTitle: "",
+  };
+
   useEffect(() => {
     fetchLeads();
   }, []);
@@ -163,14 +48,11 @@ export default function LeadsPage() {
     } catch (error) {
       console.error("Error fetching leads:", error);
       toast.error("Failed to load leads");
-      // Fallback to mock data in case of error
-      setLeads(MOCK_LEADS);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch Google Sheets
   useEffect(() => {
     const fetchGoogleSheets = async () => {
       setSheetsLoading(true);
@@ -193,14 +75,12 @@ export default function LeadsPage() {
 
   const handleLeadUpdate = async (updatedLead: Lead) => {
     try {
-      // Update lead in database through API
       await axios.post("/api/leads/update", {
         id: updatedLead.id,
         status: updatedLead.status,
         position: updatedLead.position,
       });
 
-      // Update local state
       setLeads(
         leads.map((lead) =>
           lead.id === updatedLead.id ? { ...lead, ...updatedLead } : lead
@@ -215,16 +95,13 @@ export default function LeadsPage() {
   };
 
   const handleLeadClick = (lead: Lead) => {
-    // In a real app, this would open a lead details modal or navigate to a details page
     toast.info(`Viewing lead: ${lead.fullName}`);
   };
 
   const handleDeleteLead = async (id: string) => {
     try {
-      // Delete lead from database through API
       await axios.delete(`/api/leads/${id}`);
 
-      // Update local state
       setLeads(leads.filter((lead) => lead.id !== id));
       toast.success("Lead deleted successfully");
     } catch (error) {
@@ -234,13 +111,22 @@ export default function LeadsPage() {
   };
 
   const handleEditLead = (lead: Lead) => {
-    // In a real app, this would navigate to an edit page or open a modal
     toast.info(`Editing lead: ${lead.fullName}`);
   };
 
   const handleAddLead = () => {
-    // In a real app, this would open a modal or navigate to a create page
-    toast.info("Add lead functionality will be implemented here");
+    setShowLeadCreator(true);
+  };
+
+  const handleCreateLead = async (lead: any) => {
+    try {
+      const response = await axios.post("/api/leads", lead);
+      setLeads([...leads, response.data]);
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error creating lead:", error);
+      return Promise.reject(error);
+    }
   };
 
   return (
@@ -250,6 +136,12 @@ export default function LeadsPage() {
         sheetsLoading={sheetsLoading}
         sheetsError={sheetsError}
         onAddLead={handleAddLead}
+      />
+
+      <LeadCreator
+        isOpen={showLeadCreator}
+        onOpenChange={setShowLeadCreator}
+        onCreateLead={handleCreateLead}
       />
 
       <Tabs
@@ -264,7 +156,7 @@ export default function LeadsPage() {
         <TabsContent value='kanban' className='space-y-4'>
           <KanbanBoard
             initialLeads={leads}
-            users={MOCK_USERS}
+            users={[]}
             onLeadUpdate={handleLeadUpdate}
             onLeadClick={handleLeadClick}
           />

@@ -9,10 +9,8 @@ import { SheetConnector } from "@/components/sheets-to-leads/sheet-connector";
 export default function SheetsToLeadsPage() {
   const router = useRouter();
 
-  // Function to handle adding a lead
   const handleAddLead = async (lead: any) => {
     try {
-      // In production, this would be an API call
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: {
@@ -24,9 +22,6 @@ export default function SheetsToLeadsPage() {
       if (!response.ok) {
         throw new Error("Failed to add lead");
       }
-
-      // Optionally navigate to the leads page after adding
-      // router.push("/leads");
     } catch (error) {
       console.error("Error adding lead:", error);
       toast.error("Failed to add lead to database");

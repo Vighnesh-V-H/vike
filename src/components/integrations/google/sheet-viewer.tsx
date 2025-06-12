@@ -261,29 +261,30 @@ export function SheetViewer({
               row.original["Name"] ||
               row.original["Full Name"] ||
               row.original["Contact"] ||
-              row.getValue("col_0") ||
+              row.original[headers[0]] ||
               "",
             email:
               row.original["Email"] ||
               row.original["Email Address"] ||
-              row.getValue("col_2") ||
+              row.original[headers[2]] ||
               "",
             phone:
               row.original["Phone"] ||
               row.original["Phone Number"] ||
               row.original["Contact Number"] ||
-              row.getValue("col_3") ||
+              row.original[headers[3]] ||
               "",
             companyName:
               row.original["Company"] ||
               row.original["Company Name"] ||
               row.original["Organization"] ||
-              row.getValue("col_1") ||
+              row.original[headers[1]] ||
               "",
             jobTitle:
               row.original["Job Title"] ||
               row.original["Position"] ||
               row.original["Title"] ||
+              row.original[headers[4]] ||
               "",
             // Include all original data for reference
             originalData: row.original,
@@ -419,35 +420,24 @@ export function SheetViewer({
         </CardContent>
       </Card>
 
-      {/* Add the dialog for the lead creator */}
-      <Dialog open={showLeadCreator} onOpenChange={setShowLeadCreator}>
-        <DialogTitle className='hidden'>Add To Leads</DialogTitle>
-        <DialogContent className='sm:max-w-[800px]'>
-          {selectedRowData && (
-            <LeadCreator
-              rowData={selectedRowData}
-              onCreateLead={async (lead) => {
-                try {
-                  const response = await axios.post("/api/leads", lead);
-
-                  if (onAddLead) {
-                    await onAddLead(response.data);
-                  }
-
-                  toast.success("Lead successfully added to database");
-                  setShowLeadCreator(false);
-                } catch (error: any) {
-                  console.error("Error saving lead to database:", error);
-
-                  // Pass the error to the LeadCreator component to handle
-                  throw error;
-                }
-              }}
-              onCancel={() => setShowLeadCreator(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      <LeadCreator
+        isOpen={showLeadCreator}
+        onOpenChange={setShowLeadCreator}
+        rowData={selectedRowData || {}}
+        onCreateLead={async (lead) => {
+          try {
+            const response = await axios.post("/api/leads", lead);
+            if (onAddLead) {
+              await onAddLead(response.data);
+            }
+            toast.success("Lead successfully added to database");
+            setShowLeadCreator(false);
+          } catch (error: any) {
+            console.error("Error saving lead to database:", error);
+            throw error;
+          }
+        }}
+      />
     </>
   );
 }
