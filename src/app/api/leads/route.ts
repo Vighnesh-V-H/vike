@@ -119,6 +119,55 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
+    // Batch support: if body is an array, handle batch insert
+    if (Array.isArray(body)) {
+      // Validate all leads
+      const validationResults = body.map((lead: any) =>
+        leadSchema.safeParse(lead)
+      );
+      const allValid = validationResults.every((result) => result.success);
+
+      if (!allValid) {
+        // Collect errors for invalid leads
+        const errors = validationResults
+          .map((result, idx) =>
+            result.success ? null : { index: idx, error: result.error.format() }
+          )
+          .filter(Boolean);
+        return NextResponse.json(
+          {
+            error: "Validation failed for one or more leads",
+            details: errors,
+          },
+          { status: 400 }
+        );
+      }
+
+      // All valid, prepare for insert
+      const leadsToInsert = validationResults.map((result: any) => {
+        const validatedData = result.data;
+        return {
+          fullName: validatedData.fullName,
+          email: validatedData.email || null,
+          phone: validatedData.phone || null,
+          companyName: validatedData.companyName || null,
+          jobTitle: validatedData.jobTitle || null,
+          source: validatedData.source || null,
+          tags: validatedData.tags || null,
+          status: validatedData.status,
+          priority: validatedData.priority,
+          value: validatedData.value ? String(validatedData.value) : null,
+          assignedTo: validatedData.assignedTo || null,
+          notes: validatedData.notes || null,
+          position: validatedData.position,
+        };
+      });
+
+      const result = await db.insert(leads).values(leadsToInsert).returning();
+      return NextResponse.json(result, { status: 201 });
+    }
+
+    // Single object: keep existing behavior
     let parsedTags = body.tags;
     if (typeof body.tags === "string") {
       try {
@@ -168,7 +217,9 @@ export async function POST(req: NextRequest) {
       companyName: validatedData.companyName || null,
       jobTitle: validatedData.jobTitle || null,
       source: validatedData.source || null,
-      tags: validatedData.tags || null,
+      tags: Array.isArray(validatedData.tags)
+        ? JSON.stringify(validatedData.tags)
+        : validatedData.tags || null,
       status: validatedData.status,
       priority: validatedData.priority,
       value: validatedData.value ? String(validatedData.value) : null,

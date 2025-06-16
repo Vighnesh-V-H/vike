@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,7 +10,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
@@ -22,6 +20,18 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { leadSchema } from "@/lib/schema";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  Form,
+} from "@/components/ui/form";
 
 interface LeadCreatorProps {
   isOpen: boolean;
@@ -43,268 +53,270 @@ export function LeadCreator({
   rowData = {},
   onCreateLead,
 }: LeadCreatorProps) {
-  const [leadData, setLeadData] = useState({
-    fullName: rowData.fullName || "",
-    companyName: rowData.companyName || "",
-    email: rowData.email || "",
-    phone: rowData.phone || "",
-    jobTitle: rowData.jobTitle || "",
-    status: "new",
-    priority: "medium",
-    tags: [] as string[],
-    notes: "",
+  const form = useForm<z.infer<typeof leadSchema>>({
+    resolver: zodResolver(leadSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      phone: "",
+      companyName: "",
+      jobTitle: "",
+      source: "",
+      tags: [],
+      status: "new",
+      priority: "medium",
+      notes: "",
+      position: 0,
+      value: "",
+      assignedTo: "",
+    },
   });
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = form;
   const [newTag, setNewTag] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleInputChange = (field: string, value: string) => {
-    setLeadData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
 
   const handleAddTag = () => {
-    if (newTag && !leadData.tags.includes(newTag)) {
-      setLeadData((prev) => ({
-        ...prev,
-        tags: [...prev.tags, newTag],
-      }));
+    if (newTag) {
+      const tags = form.getValues("tags") || [];
+      if (!tags.includes(newTag)) {
+        form.setValue("tags", [...tags, newTag]);
+      }
       setNewTag("");
     }
   };
 
   const handleRemoveTag = (tag: string) => {
-    setLeadData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((t) => t !== tag),
-    }));
+    const tags = form.getValues("tags") || [];
+    form.setValue(
+      "tags",
+      tags.filter((t: string) => t !== tag)
+    );
   };
 
-  const handleSubmit = async () => {
-    if (!leadData.fullName) {
-      toast.error("Lead name is required");
-      return;
-    }
-
-    setIsSubmitting(true);
+  const onSubmit = async (data: z.infer<typeof leadSchema>) => {
     try {
       const formattedTags =
-        leadData.tags.length > 0 ? JSON.stringify(leadData.tags) : null;
-
-      const lead = {
-        fullName: leadData.fullName,
-        email: leadData.email,
-        phone: leadData.phone,
-        companyName: leadData.companyName,
-        jobTitle: leadData.jobTitle,
-        status: leadData.status,
-        priority: leadData.priority,
-        tags: formattedTags,
-        notes: leadData.notes,
-        source: "Google Sheet",
-        position: 0,
-      };
-
+        data.tags.length > 0 ? JSON.stringify(data.tags) : null;
+      const lead = { ...data, tags: formattedTags };
       await onCreateLead(lead);
       toast.success("Lead created successfully");
       onOpenChange(false);
-
-      setLeadData({
-        fullName: "",
-        companyName: "",
-        email: "",
-        phone: "",
-        jobTitle: "",
-        status: "new",
-        priority: "medium",
-        tags: [],
-        notes: "",
-      });
+      reset();
     } catch (error: any) {
-      console.error("Error creating lead:", error);
-
-      if (error.response?.data?.error === "Validation failed") {
-        const details = error.response.data.details;
-        const errorMessages: string[] = [];
-
-        if (details) {
-          Object.entries(details).forEach(
-            ([field, fieldError]: [string, any]) => {
-              if (fieldError._errors && fieldError._errors.length > 0) {
-                errorMessages.push(
-                  `${field}: ${fieldError._errors.join(", ")}`
-                );
-              }
-            }
-          );
-        }
-
-        if (errorMessages.length > 0) {
-          toast.error(`Validation errors: ${errorMessages.join("; ")}`);
-        } else {
-          toast.error("Failed to create lead: Validation error");
-        }
-      } else {
-        toast.error("Failed to create lead");
-      }
-    } finally {
-      setIsSubmitting(false);
+      toast.error("Failed to create lead");
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        onOpenChange(open);
+        if (!open) reset();
+      }}>
       <DialogContent className='sm:max-w-[700px]'>
         <DialogHeader>
           <DialogTitle>Create New Lead</DialogTitle>
         </DialogHeader>
-
-        <div className='space-y-4'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div className='space-y-2'>
-              <Label htmlFor='fullName'>Full Name*</Label>
-              <Input
-                id='fullName'
-                value={leadData.fullName}
-                onChange={(e) => handleInputChange("fullName", e.target.value)}
-                placeholder='John Smith'
-                required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <FormField
+                control={form.control}
+                name='fullName'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Full Name*</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder='John Smith' required />
+                    </FormControl>
+                    <FormMessage>{errors.fullName?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name='companyName'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder='Acme Inc.' />
+                    </FormControl>
+                    <FormMessage>{errors.companyName?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name='email'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type='email'
+                        placeholder='john@example.com'
+                      />
+                    </FormControl>
+                    <FormMessage>{errors.email?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name='phone'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder='(123) 456-7890' />
+                    </FormControl>
+                    <FormMessage>{errors.phone?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name='jobTitle'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Job Title</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder='Software Engineer' />
+                    </FormControl>
+                    <FormMessage>{errors.jobTitle?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name='status'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}>
+                        <SelectTrigger id='status'>
+                          <SelectValue placeholder='Select a status' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='new'>New</SelectItem>
+                          <SelectItem value='contacted'>Contacted</SelectItem>
+                          <SelectItem value='won'>Won</SelectItem>
+                          <SelectItem value='lost'>Lost</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage>{errors.status?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name='priority'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}>
+                        <SelectTrigger id='priority'>
+                          <SelectValue placeholder='Select a priority' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='high'>High</SelectItem>
+                          <SelectItem value='medium'>Medium</SelectItem>
+                          <SelectItem value='low'>Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage>{errors.priority?.message}</FormMessage>
+                  </FormItem>
+                )}
               />
             </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='companyName'>Company Name</Label>
-              <Input
-                id='companyName'
-                value={leadData.companyName}
-                onChange={(e) =>
-                  handleInputChange("companyName", e.target.value)
-                }
-                placeholder='Acme Inc.'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='email'>Email</Label>
-              <Input
-                id='email'
-                type='email'
-                value={leadData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                placeholder='john@example.com'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='phone'>Phone</Label>
-              <Input
-                id='phone'
-                value={leadData.phone}
-                onChange={(e) => handleInputChange("phone", e.target.value)}
-                placeholder='(123) 456-7890'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='jobTitle'>Job Title</Label>
-              <Input
-                id='jobTitle'
-                value={leadData.jobTitle}
-                onChange={(e) => handleInputChange("jobTitle", e.target.value)}
-                placeholder='Software Engineer'
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='status'>Status</Label>
-              <Select
-                value={leadData.status}
-                onValueChange={(value) => handleInputChange("status", value)}>
-                <SelectTrigger id='status'>
-                  <SelectValue placeholder='Select a status' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='new'>New</SelectItem>
-                  <SelectItem value='contacted'>Contacted</SelectItem>
-                  <SelectItem value='won'>Won</SelectItem>
-                  <SelectItem value='lost'>Lost</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='priority'>Priority</Label>
-              <Select
-                value={leadData.priority}
-                onValueChange={(value) => handleInputChange("priority", value)}>
-                <SelectTrigger id='priority'>
-                  <SelectValue placeholder='Select a priority' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='high'>High</SelectItem>
-                  <SelectItem value='medium'>Medium</SelectItem>
-                  <SelectItem value='low'>Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className='space-y-2'>
-            <Label htmlFor='tags'>Tags</Label>
-            <div className='flex flex-wrap gap-2 mb-2'>
-              {leadData.tags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant='secondary'
-                  className='flex items-center gap-1'>
-                  {tag}
-                  <X
-                    className='h-3 w-3 cursor-pointer'
-                    onClick={() => handleRemoveTag(tag)}
-                  />
-                </Badge>
-              ))}
-            </div>
-            <div className='flex gap-2'>
-              <Input
-                id='tags'
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                placeholder='Add a tag'
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddTag();
-                  }
-                }}
-              />
-              <Button type='button' onClick={handleAddTag} size='sm'>
-                <Plus className='h-4 w-4' />
-              </Button>
-            </div>
-          </div>
-
-          <div className='space-y-2'>
-            <Label htmlFor='notes'>Notes</Label>
-            <textarea
-              id='notes'
-              className='w-full min-h-[100px] p-2 border rounded-md'
-              value={leadData.notes}
-              onChange={(e) => handleInputChange("notes", e.target.value)}
-              placeholder='Add any additional notes about this lead...'
+            <FormField
+              control={control}
+              name='tags'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tags</FormLabel>
+                  <div className='flex flex-wrap gap-2 mb-2'>
+                    {(field.value || []).map((tag: string) => (
+                      <Badge
+                        key={tag}
+                        variant='secondary'
+                        className='flex items-center gap-1'>
+                        {tag}
+                        <X
+                          className='h-3 w-3 cursor-pointer'
+                          onClick={() => handleRemoveTag(tag)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className='flex gap-2'>
+                    <Input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder='Add a tag'
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                    />
+                    <Button type='button' onClick={handleAddTag} size='sm'>
+                      <Plus className='h-4 w-4' />
+                    </Button>
+                  </div>
+                  <FormMessage>{errors.tags?.message as string}</FormMessage>
+                </FormItem>
+              )}
             />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant='outline' onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create Lead"}
-          </Button>
-        </DialogFooter>
+            <FormField
+              control={control}
+              name='notes'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Notes</FormLabel>
+                  <FormControl>
+                    <textarea
+                      {...field}
+                      className='w-full min-h-[100px] p-2 border rounded-md'
+                      placeholder='Add any additional notes about this lead...'
+                    />
+                  </FormControl>
+                  <FormMessage>{errors.notes?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button
+                variant='outline'
+                type='button'
+                onClick={() => {
+                  onOpenChange(false);
+                  reset();
+                }}>
+                Cancel
+              </Button>
+              <Button type='submit' disabled={isSubmitting}>
+                {isSubmitting ? "Creating..." : "Create Lead"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

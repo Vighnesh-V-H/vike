@@ -42,16 +42,20 @@ export const googleTaskSchema = z.object({
 
 export const leadSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
-  email: z.string().email("Invalid email format").optional().nullable(),
-  phone: z.string().optional().nullable(),
-  companyName: z.string().optional().nullable(),
-  jobTitle: z.string().optional().nullable(),
-  source: z.string().optional().nullable(),
-  tags: z.string().optional().nullable(),
-  status: z.enum(["new", "contacted", "won", "lost"]).default("new"),
-  priority: z.enum(["high", "medium", "low"]).default("medium"),
-  value: z.number().optional().nullable().or(z.string().optional().nullable()),
-  assignedTo: z.string().optional().nullable(),
-  notes: z.string().optional().nullable(),
-  position: z.number().default(0),
+  email: z
+    .string()
+    .email("Invalid email format")
+    .describe("Email address")
+    .optional(),
+  phone: z.string().describe("Phone number"),
+  companyName: z.string().describe("Company name"),
+  jobTitle: z.string().describe("Job title"),
+  source: z.string().describe("Source of the lead"),
+  tags: z.array(z.string()),
+  status: z.enum(["new", "contacted", "won", "lost"]),
+  priority: z.enum(["high", "medium", "low"]),
+  value: z.union([z.string(), z.number()]).optional(),
+  assignedTo: z.string().optional(),
+  notes: z.string().describe("Notes about the lead"),
+  position: z.number(),
 });
