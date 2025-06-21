@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { leads } from "@/db/schema";
 import { leadSchema } from "@/lib/schema";
 import { auth } from "@/auth";
-import { and, gte, lte } from "drizzle-orm";
+import { and, gte, lte, eq } from "drizzle-orm";
 import { type Lead } from "@/lib/leads/types";
 
 type LeadInsert = typeof leads.$inferInsert;
@@ -11,9 +11,11 @@ type LeadInsert = typeof leads.$inferInsert;
 export async function GET(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const userId = session.user.id;
 
     const { searchParams } = new URL(req.url);
     const fromParam = searchParams.get("from");
@@ -38,7 +40,13 @@ export async function GET(req: NextRequest) {
       const fetchedLeads = await db
         .select()
         .from(leads)
-        .where(and(gte(leads.createdAt, from), lte(leads.createdAt, to)))
+        .where(
+          and(
+            gte(leads.createdAt, from),
+            lte(leads.createdAt, to),
+            eq(leads.userId, userId)
+          )
+        )
         .orderBy(leads.createdAt);
 
       const transformedLeads = fetchedLeads.map((lead) => {
@@ -71,7 +79,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(transformedLeads);
     }
 
-    const result = await db.select().from(leads);
+    const result = await db
+      .select()
+      .from(leads)
+      .where(eq(leads.userId, userId));
 
     const transformedLeads = result.map((lead) => {
       let parsedTags = null;
@@ -113,10 +124,11 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const userId = session.user.id;
     const body = await req.json();
 
     // Batch support: if body is an array, handle batch insert
@@ -158,6 +170,7 @@ export async function POST(req: NextRequest) {
           priority: validatedData.priority,
           value: validatedData.value ? String(validatedData.value) : null,
           assignedTo: validatedData.assignedTo || null,
+          userId: userId,
           notes: validatedData.notes || null,
           position: validatedData.position,
         };
@@ -224,6 +237,7 @@ export async function POST(req: NextRequest) {
       priority: validatedData.priority,
       value: validatedData.value ? String(validatedData.value) : null,
       assignedTo: validatedData.assignedTo || null,
+      userId: userId,
       notes: validatedData.notes || null,
       position: validatedData.position,
     };

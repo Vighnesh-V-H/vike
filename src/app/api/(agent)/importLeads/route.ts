@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       return Response.json({ error: "Unauthenticated" }, { status: 401 });
     }
 
-    const user = session.user;
+    const userId = session.user.id;
     const body = await req.json();
 
     // Validate request body
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     const { sheetName } = validation.data;
 
     // Get the user's OAuth2 client
-    const oauth2Client = await getOAuth2ClientForUser(user.id!);
+    const oauth2Client = await getOAuth2ClientForUser(userId);
 
     // Get the list of sheets
     const sheets = await getSheets(oauth2Client);
@@ -170,15 +170,13 @@ export async function POST(req: Request) {
       priority: validatedData.priority,
       value: validatedData.value ? String(validatedData.value) : null,
       assignedTo: validatedData.assignedTo || null,
+      userId: userId,
       notes: validatedData.notes || null,
       position: validatedData.position,
     }));
 
     // Insert leads into the database
-    const result = await db
-      .insert(leads)
-      .values(leadsToInsert as any)
-      .returning();
+    const result = await db.insert(leads).values(leadsToInsert).returning();
 
     return Response.json({
       success: true,
