@@ -59,3 +59,7 @@ export const leadSchema = z.object({
   notes: z.string().describe("Notes about the lead"),
   position: z.number(),
 });
+
+export const addToLeadSchema = z.object({
+  sheetName: z.string().describe("The name of the Google Sheet to import"),
+});

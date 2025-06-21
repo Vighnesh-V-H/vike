@@ -8,6 +8,7 @@ This project is a comprehensive lead management system with a drag-and-drop Kanb
 - **Dashboard**: Visual analytics and metrics for lead performance
 - **Google Sheets Integration**: Import leads directly from Google Sheets
 - **Lead Management**: Create, update, and track leads
+- ** Agent ** : add tasks with a simple command , import leads with a single query
 
 ## Installation
 
