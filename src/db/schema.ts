@@ -370,6 +370,7 @@ export const leads = pgTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
     fullName: varchar("full_name", { length: 255 }).notNull(),
     email: varchar("email", { length: 255 }).unique(),
     phone: varchar("phone", { length: 20 }),
@@ -381,6 +382,7 @@ export const leads = pgTable(
     priority: leadPriorityEnum("priority").notNull().default("medium"),
     value: decimal("value", { precision: 12, scale: 2 }),
     assignedTo: text("assigned_to").references(() => users.id),
+
     notes: text("notes"),
     position: integer("position").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -394,10 +396,10 @@ export const leads = pgTable(
     statusIdx: index("leads_status_idx").on(leads.status),
     emailIdx: index("leads_email_idx").on(leads.email),
     assignedToIdx: index("leads_assigned_to_idx").on(leads.assignedTo),
+    userIdIdx: index("leads_user_id_idx").on(leads.userId),
     createdAtIdx: index("leads_created_at_idx").on(leads.createdAt),
   })
 );
-
 
 export const activities = pgTable(
   "activities",
