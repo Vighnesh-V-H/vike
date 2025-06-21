@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { leads } from "@/db/schema";
 import { leadSchema } from "@/lib/schema";
 import { auth } from "@/auth";
-import { eq, and, gte, lte } from "drizzle-orm";
+import { and, gte, lte } from "drizzle-orm";
 import { type Lead } from "@/lib/leads/types";
 
 type LeadInsert = typeof leads.$inferInsert;
