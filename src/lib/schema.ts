@@ -54,7 +54,7 @@ export const leadSchema = z.object({
   tags: z.array(z.string()),
   status: z.enum(["new", "contacted", "won", "lost"]),
   priority: z.enum(["high", "medium", "low"]),
-  value: z.union([z.string(), z.number()]).optional(),
+  value: z.union([z.string(), z.number()]).optional().nullable(),
   assignedTo: z.string().optional(),
   notes: z.string().describe("Notes about the lead"),
   position: z.number(),
