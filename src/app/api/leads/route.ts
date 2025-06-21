@@ -133,10 +133,11 @@ export async function POST(req: NextRequest) {
 
     // Batch support: if body is an array, handle batch insert
     if (Array.isArray(body)) {
-      // Validate all leads
+      // Validate all leads - ensure we return validation results
       const validationResults = body.map((lead: any) =>
         leadSchema.safeParse(lead)
       );
+
       const allValid = validationResults.every((result) => result.success);
 
       if (!allValid) {
@@ -156,7 +157,7 @@ export async function POST(req: NextRequest) {
       }
 
       // All valid, prepare for insert
-      const leadsToInsert = validationResults.map((result: any) => {
+      const leadsToInsert = validationResults.map((result) => {
         const validatedData = result.data;
         return {
           fullName: validatedData.fullName,
@@ -165,7 +166,9 @@ export async function POST(req: NextRequest) {
           companyName: validatedData.companyName || null,
           jobTitle: validatedData.jobTitle || null,
           source: validatedData.source || null,
-          tags: validatedData.tags || null,
+          tags: Array.isArray(validatedData.tags)
+            ? JSON.stringify(validatedData.tags)
+            : null,
           status: validatedData.status,
           priority: validatedData.priority,
           value: validatedData.value ? String(validatedData.value) : null,
@@ -180,7 +183,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(result, { status: 201 });
     }
 
-    // Single object: keep existing behavior
+    // Single object: handle a single lead
     let parsedTags = body.tags;
     if (typeof body.tags === "string") {
       try {
@@ -202,15 +205,15 @@ export async function POST(req: NextRequest) {
 
     const leadData = {
       ...body,
-      tags:
-        typeof parsedTags === "object"
-          ? JSON.stringify(parsedTags)
-          : parsedTags,
+      tags: parsedTags,
       value: numericValue,
     };
 
+    console.log("leaddata", leadData);
+
     const validationResult = leadSchema.safeParse(leadData);
 
+    console.log("validationresult", validationResult.error?.message);
     if (!validationResult.success) {
       return NextResponse.json(
         {
@@ -232,7 +235,7 @@ export async function POST(req: NextRequest) {
       source: validatedData.source || null,
       tags: Array.isArray(validatedData.tags)
         ? JSON.stringify(validatedData.tags)
-        : validatedData.tags || null,
+        : null,
       status: validatedData.status,
       priority: validatedData.priority,
       value: validatedData.value ? String(validatedData.value) : null,
