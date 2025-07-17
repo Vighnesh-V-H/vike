@@ -7,7 +7,11 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import { createEmbedding } from "@/lib/embedding";
 import { StreamData } from "ai";
 import { format } from "date-fns";
-import { addToLeadSchema, displayLeadsSchema } from "@/lib/schema";
+import {
+  addToLeadSchema,
+  deleteLeadsSchema,
+  displayLeadsSchema,
+} from "@/lib/schema";
 import axios from "axios";
 
 export async function POST(req: Request) {
@@ -180,6 +184,16 @@ When you detect such requests:
     - User: "Show me all high priority leads" -> Action: Call displayLeads with priority="high"
     - User: "List the new leads" -> Action: Call displayLeads with status="new"
 
+    Deleting Leads: When a user asks to delete, remove, get rid of, discard, or erase a lead, you MUST use the deleteLeads tool. First, identify the lead by its full name or email. Crucially, you must ask for explicit confirmation from the user before executing the deletion.
+
+User: "Please remove the lead 'Jane Smith'."
+
+Action: First, respond with "Are you sure you want to delete the lead for Jane Smith?". If the user confirms, then call deleteLeads with identifier="Jane Smith".
+
+User: "Get rid of the lead with email 'test@example.com'."
+
+Action: First, respond with "Are you sure you want to delete the lead with email test@example.com?". If the user confirms, then call deleteLeads with identifier="test@example.com".
+
 Examples:
 - User: "Add all contents from my Sales Prospects sheet to leads"
 - Action: Call addToLead tool with sheetName="Sales Prospects"
@@ -255,7 +269,6 @@ After using a tool, provide a helpful response that acknowledges the action take
               const responseData = response.data;
 
               if (responseData.success && responseData.foundCount > 0) {
-                // Format the leads for display
                 const leadsList = responseData.data
                   .map(
                     (lead: any) =>
@@ -277,6 +290,42 @@ After using a tool, provide a helpful response that acknowledges the action take
               const errorMessage =
                 error.response?.data?.error || error.message || "Unknown error";
               return `❌ Failed to display leads. Error: ${errorMessage}`;
+            }
+          },
+        }),
+
+        deleteLeads: tool({
+          description:
+            "Deletes a lead from the system using their name or email.",
+          parameters: deleteLeadsSchema,
+          execute: async ({ identifier }) => {
+            data.append(
+              JSON.stringify({
+                tool_status: `Attempting to delete lead: "${identifier}"...`,
+              })
+            );
+            try {
+              const response = await axios.delete(
+                `${
+                  process.env.NEXT_PUBLIC_URL || "http://localhost:3000"
+                }/api/leads/delete-lead`,
+                {
+                  params: { identifier }, // Pass identifier as a query parameter
+                  headers: { Cookie: req.headers.get("cookie") || "" },
+                }
+              );
+              const responseData = response.data;
+              if (responseData.success) {
+                return `✅ ${responseData.message}`;
+              } else {
+                return `❌ Failed to delete lead. Error: ${
+                  responseData.error || "Unknown error"
+                }`;
+              }
+            } catch (error: any) {
+              const errorMessage =
+                error.response?.data?.error || error.message || "Unknown error";
+              return `❌ Failed to delete lead "${identifier}". Error: ${errorMessage}`;
             }
           },
         }),
