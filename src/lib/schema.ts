@@ -87,3 +87,9 @@ export const displayLeadsSchema = z.object({
     .optional()
     .describe("Find a lead by their exact email address."),
 });
+
+export const deleteRequestSchema = z.object({
+  leadIds: z
+    .array(z.string().uuid("Invalid lead ID format"))
+    .min(1, "At least one lead ID is required"),
+});

@@ -180,6 +180,16 @@ When you detect such requests:
     - User: "Show me all high priority leads" -> Action: Call displayLeads with priority="high"
     - User: "List the new leads" -> Action: Call displayLeads with status="new"
 
+    Deleting Leads: When a user asks to delete, remove, get rid of, discard, or erase a lead, you MUST use the deleteLeads tool. First, identify the lead by its full name or email. Crucially, you must ask for explicit confirmation from the user before executing the deletion.
+
+User: "Please remove the lead 'Jane Smith'."
+
+Action: First, respond with "Are you sure you want to delete the lead for Jane Smith?". If the user confirms, then call deleteLeads with identifier="Jane Smith".
+
+User: "Get rid of the lead with email 'test@example.com'."
+
+Action: First, respond with "Are you sure you want to delete the lead with email test@example.com?". If the user confirms, then call deleteLeads with identifier="test@example.com".
+
 Examples:
 - User: "Add all contents from my Sales Prospects sheet to leads"
 - Action: Call addToLead tool with sheetName="Sales Prospects"
@@ -255,7 +265,6 @@ After using a tool, provide a helpful response that acknowledges the action take
               const responseData = response.data;
 
               if (responseData.success && responseData.foundCount > 0) {
-                // Format the leads for display
                 const leadsList = responseData.data
                   .map(
                     (lead: any) =>
