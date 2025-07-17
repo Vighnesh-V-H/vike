@@ -7,7 +7,11 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import { createEmbedding } from "@/lib/embedding";
 import { StreamData } from "ai";
 import { format } from "date-fns";
-import { addToLeadSchema, displayLeadsSchema } from "@/lib/schema";
+import {
+  addToLeadSchema,
+  deleteLeadsSchema,
+  displayLeadsSchema,
+} from "@/lib/schema";
 import axios from "axios";
 
 export async function POST(req: Request) {
@@ -286,6 +290,42 @@ After using a tool, provide a helpful response that acknowledges the action take
               const errorMessage =
                 error.response?.data?.error || error.message || "Unknown error";
               return `❌ Failed to display leads. Error: ${errorMessage}`;
+            }
+          },
+        }),
+
+        deleteLeads: tool({
+          description:
+            "Deletes a lead from the system using their name or email.",
+          parameters: deleteLeadsSchema,
+          execute: async ({ identifier }) => {
+            data.append(
+              JSON.stringify({
+                tool_status: `Attempting to delete lead: "${identifier}"...`,
+              })
+            );
+            try {
+              const response = await axios.delete(
+                `${
+                  process.env.NEXT_PUBLIC_URL || "http://localhost:3000"
+                }/api/leads/delete-lead`,
+                {
+                  params: { identifier }, // Pass identifier as a query parameter
+                  headers: { Cookie: req.headers.get("cookie") || "" },
+                }
+              );
+              const responseData = response.data;
+              if (responseData.success) {
+                return `✅ ${responseData.message}`;
+              } else {
+                return `❌ Failed to delete lead. Error: ${
+                  responseData.error || "Unknown error"
+                }`;
+              }
+            } catch (error: any) {
+              const errorMessage =
+                error.response?.data?.error || error.message || "Unknown error";
+              return `❌ Failed to delete lead "${identifier}". Error: ${errorMessage}`;
             }
           },
         }),

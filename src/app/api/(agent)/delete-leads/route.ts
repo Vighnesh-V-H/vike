@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { leads } from "@/db/schema";
 import { deleteRequestSchema } from "@/lib/schema";
 import { and, inArray, eq } from "drizzle-orm";
-import { z } from "zod";
+
 
 export async function DELETE(req: Request) {
   try {
