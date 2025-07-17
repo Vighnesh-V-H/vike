@@ -1,9 +1,7 @@
-// lib/queue/worker.ts
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
 import { processDocument } from "@/lib/docProcessor";
 
-// Create dedicated Redis connection for worker
 const connection = new IORedis(process.env.REDIS_DATABASE_URL!, {
   tls: {
     rejectUnauthorized: false,
@@ -23,13 +21,12 @@ export function startWorker() {
         await processDocument(documentId);
       },
       {
-        connection, // Use the dedicated connection
+        connection,
         limiter: { max: 5, duration: 1000 },
-        useWorkerThreads: false, // Disable if not using worker threads
+        useWorkerThreads: false,
       }
     );
 
-    // Add error handling
     connection.on("error", (err) => {
       console.error("Redis connection error:", err);
     });

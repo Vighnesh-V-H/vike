@@ -1,8 +1,3 @@
-// lib/chunkUtils.ts
-
-/**
- * Split text into chunks with overlap
- */
 export function splitDocumentIntoChunks(
   content: string,
   chunkSize: number = 1000,
@@ -15,10 +10,8 @@ export function splitDocumentIntoChunks(
     const end = start + chunkSize;
     chunks.push(content.slice(start, end));
 
-    // Move start position, accounting for overlap
     start = end - chunkOverlap;
 
-    // Prevent infinite loop on small content
     if (end >= content.length) break;
   }
 

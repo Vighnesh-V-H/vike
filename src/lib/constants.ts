@@ -272,11 +272,6 @@ export const testimonials: Testimonial[] = [
 ];
 
 export const sideBarOptions = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/images/testimonial-male.png", // Using testimonial image as fallback avatar
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -289,20 +284,11 @@ export const sideBarOptions = {
       url: "/leads",
       icon: Mail,
     },
-    {
-      title: "Tasks",
-      url: "#",
-      icon: BookOpen,
-    },
+
     {
       title: "Google Sheets",
       url: "/google/sheets",
       icon: FileSpreadsheet,
-    },
-    {
-      title: "Settings",
-      url: "/settings",
-      icon: Settings,
     },
     {
       title: "Integrations",
