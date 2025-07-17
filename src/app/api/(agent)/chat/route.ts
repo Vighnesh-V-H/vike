@@ -7,7 +7,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import { createEmbedding } from "@/lib/embedding";
 import { StreamData } from "ai";
 import { format } from "date-fns";
-import { addToLeadSchema } from "@/lib/schema";
+import { addToLeadSchema, displayLeadsSchema } from "@/lib/schema";
 import axios from "axios";
 
 export async function POST(req: Request) {
@@ -30,8 +30,9 @@ export async function POST(req: Request) {
   }
 
   const { messages, id }: { messages: CoreMessage[]; id?: string } =
-    await req.json(); // Filter out messages with empty content to prevent API errors
+    await req.json();
 
+  // Filter out messages with empty content to prevent API errors
   const validMessages = messages.filter((msg) => {
     const content = msg.content;
     if (typeof content === "string") {
@@ -146,8 +147,9 @@ export async function POST(req: Request) {
 
     if (matchingChunks.length > 0) {
       context += matchingChunks[0].text;
-    } // System prompt with context
+    }
 
+    // System prompt with context
     const systemPrompt = `You are Vike AI, a knowledgeable assistant for personal knowledge management. 
 Use the following context when relevant. Maintain natural conversation flow and markdown formatting.
 
@@ -174,12 +176,18 @@ When you detect such requests:
 2. Use the addToLead tool immediately with the sheet name
 3. Do not ask for confirmation - execute the tool directly
 
+2.  **Displaying Leads**: When a user asks to see, show, find, or list leads, you MUST use the \`displayLeads\` tool. This tool can filter by criteria like status, priority, source, etc.
+    - User: "Show me all high priority leads" -> Action: Call displayLeads with priority="high"
+    - User: "List the new leads" -> Action: Call displayLeads with status="new"
+
 Examples:
 - User: "Add all contents from my Sales Prospects sheet to leads"
 - Action: Call addToLead tool with sheetName="Sales Prospects"
 
-- User: "Can you import the data from my Client List sheet?"  
+- User: "Can you import the data from my Client List sheet?"  
 - Action: Call addToLead tool with sheetName="Client List"
+
+After using a tool, provide a helpful response that acknowledges the action taken and its results.
 `;
 
     const result = streamText({
@@ -205,7 +213,7 @@ Examples:
                 { headers: { Cookie: req.headers.get("cookie") || "" } }
               );
 
-              const responseData = response.data; // 2. The return value serves as the success message AFTER the tool completes
+              const responseData = response.data;
 
               if (responseData.success) {
                 let message = `✅ ${responseData.message}`;
@@ -219,10 +227,56 @@ Examples:
                 }`;
               }
             } catch (error: any) {
-              console.error("Error in addToLead tool:", error);
               const errorMessage =
                 error.response?.data?.error || error.message || "Unknown error";
               return `❌ Failed to import leads from sheet "${sheetName}". Error: ${errorMessage}`;
+            }
+          },
+        }),
+
+        displayLeads: tool({
+          description:
+            "Fetches and displays leads based on optional filter criteria.",
+          parameters: displayLeadsSchema,
+          execute: async (filters) => {
+            data.append(
+              JSON.stringify({ tool_status: `Searching for leads...` })
+            );
+            try {
+              const response = await axios.get(
+                `${
+                  process.env.NEXT_PUBLIC_URL || "http://localhost:3000"
+                }/api/display-leads`,
+                {
+                  params: filters,
+                  headers: { Cookie: req.headers.get("cookie") || "" },
+                }
+              );
+              const responseData = response.data;
+
+              if (responseData.success && responseData.foundCount > 0) {
+                // Format the leads for display
+                const leadsList = responseData.data
+                  .map(
+                    (lead: any) =>
+                      `- **${lead.fullName}** (Status: ${lead.status}, Priority: ${lead.priority})`
+                  )
+                  .join("\n");
+                return `Found ${responseData.foundCount} leads:\n${leadsList}`;
+              } else if (
+                responseData.success &&
+                responseData.foundCount === 0
+              ) {
+                return "No leads found matching your criteria.";
+              } else {
+                return `❌ Failed to display leads. Error: ${
+                  responseData.error || "Unknown error"
+                }`;
+              }
+            } catch (error: any) {
+              const errorMessage =
+                error.response?.data?.error || error.message || "Unknown error";
+              return `❌ Failed to display leads. Error: ${errorMessage}`;
             }
           },
         }),
@@ -237,14 +291,29 @@ Examples:
           let finalContent = cleanContent;
 
           if (completion.toolResults && completion.toolResults.length > 0) {
-            const toolResult = completion.toolResults[0].result;
+            const toolResultsText = completion.toolResults
+              .map((toolResult) => {
+                if (
+                  toolResult.result &&
+                  typeof toolResult.result === "string"
+                ) {
+                  return toolResult.result;
+                }
+                return "";
+              })
+              .filter(Boolean)
+              .join("\n\n");
 
-            if (toolResult && !finalContent.includes(toolResult)) {
-              finalContent = finalContent.trim() + "\n\n" + toolResult;
+            if (toolResultsText && !finalContent.includes(toolResultsText)) {
+              if (!finalContent.trim()) {
+                finalContent = toolResultsText;
+              } else {
+                finalContent = finalContent.trim() + "\n\n" + toolResultsText;
+              }
             }
           }
 
-          if (currentChatId) {
+          if (currentChatId && finalContent.trim()) {
             await db.insert(chatMessages).values({
               chatId: currentChatId,
               role: "assistant",
@@ -261,6 +330,8 @@ Examples:
               })),
             });
           }
+        } catch (error) {
+          console.error("Error in onFinish:", error);
         } finally {
           await data.close();
         }

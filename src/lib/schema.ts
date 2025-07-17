@@ -63,3 +63,27 @@ export const leadSchema = z.object({
 export const addToLeadSchema = z.object({
   sheetName: z.string().describe("The name of the Google Sheet to import"),
 });
+
+export const displayLeadsSchema = z.object({
+  status: z
+    .string()
+    .optional()
+    .describe("Filter leads by their status, e.g., 'new', 'contacted'."),
+  priority: z
+    .string()
+    .optional()
+    .describe("Filter leads by their priority, e.g., 'high', 'low'."),
+  source: z
+    .string()
+    .optional()
+    .describe("Filter leads by their original source."),
+  assignedTo: z
+    .string()
+    .optional()
+    .describe("Find leads assigned to a specific person."),
+  tag: z.string().optional().describe("Find leads containing a specific tag."),
+  email: z
+    .string()
+    .optional()
+    .describe("Find a lead by their exact email address."),
+});

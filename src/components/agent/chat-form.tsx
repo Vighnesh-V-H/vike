@@ -86,16 +86,16 @@ export function ChatForm({
   return (
     <main
       className={cn(
-        "ring-none mx-auto flex h-svh max-h-[90vh] w-full max-w-full flex-col items-stretch border-none",
+        "ring-none mx-auto flex  h-svh max-h-[90vh] w-full max-w-full flex-col items-stretch border-none",
         className
       )}
       {...props}>
-      <div className='flex-1 content-center  overflow-y-auto px-6'>
+      <div className='flex-1 content-center   overflow-y-auto px-6'>
         {messages.length ? messageList : header}
       </div>
       <form
         onSubmit={handleSubmit}
-        className='border-input bg-background focus-within:ring-ring/10 relative mx-6 mb-6 flex items-center rounded-[16px] border px-3 py-1.5 pr-8 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-0'>
+        className='border-input  h-14 bg-background focus-within:ring-ring/10 relative mx-6 mb-6 flex items-center rounded-[16px] border px-3 py-1.5 pr-8 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-0'>
         <AutoResizeTextarea
           onKeyDown={handleKeyDown}
           onChange={(v) => setInput(v)}
@@ -108,7 +108,7 @@ export function ChatForm({
             <Button
               variant='ghost'
               size='sm'
-              className='absolute bottom-1 right-1 size-6 rounded-full'>
+              className='absolute bg-blue-400 right-1 size-8 rounded-full'>
               <ArrowUpIcon size={16} />
             </Button>
           </TooltipTrigger>

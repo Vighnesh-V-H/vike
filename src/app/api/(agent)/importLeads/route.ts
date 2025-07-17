@@ -9,7 +9,6 @@ import {
 import { leadSchema } from "@/lib/schema";
 import { z } from "zod";
 
-// Schema for request validation
 const requestSchema = z.object({
   sheetName: z.string().min(1, "Sheet name is required"),
 });
@@ -25,7 +24,6 @@ export async function POST(req: Request) {
     const userId = session.user.id;
     const body = await req.json();
 
-    // Validate request body
     const validation = requestSchema.safeParse(body);
     if (!validation.success) {
       return Response.json(
@@ -36,13 +34,10 @@ export async function POST(req: Request) {
 
     const { sheetName } = validation.data;
 
-    // Get the user's OAuth2 client
     const oauth2Client = await getOAuth2ClientForUser(userId);
 
-    // Get the list of sheets
     const sheets = await getSheets(oauth2Client);
 
-    // Find the sheet with the matching name
     const sheet = sheets.find((s) => s.name === sheetName);
     if (!sheet) {
       return Response.json(
