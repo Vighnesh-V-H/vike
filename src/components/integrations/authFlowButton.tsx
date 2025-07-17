@@ -7,8 +7,7 @@ function AuthFlowButton({ name }: { name: string }) {
   switch (name.toLowerCase()) {
     case "google":
       return <GoogleAuthButton />;
-    case "microsoft excel":
-      return <ExcelAuthButton />;
+
     default:
       return <div>Coming Soon</div>;
   }

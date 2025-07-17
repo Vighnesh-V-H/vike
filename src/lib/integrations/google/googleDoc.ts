@@ -65,7 +65,6 @@ export async function handleGoogleDoc(
       documentId: existing.id,
     });
     const worker = startWorker();
-    console.log(worker);
     return;
   }
 

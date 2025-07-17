@@ -30,9 +30,8 @@ export async function POST(req: Request) {
   }
 
   const { messages, id }: { messages: CoreMessage[]; id?: string } =
-    await req.json();
+    await req.json(); // Filter out messages with empty content to prevent API errors
 
-  // Filter out messages with empty content to prevent API errors
   const validMessages = messages.filter((msg) => {
     const content = msg.content;
     if (typeof content === "string") {
@@ -115,7 +114,6 @@ export async function POST(req: Request) {
       });
     }
 
-    // Semantic search pipeline
     let context = "";
     if (typeof userMessage === "string") {
       // Generate query embedding
@@ -124,11 +122,8 @@ export async function POST(req: Request) {
       if (embedding) {
         // Vector similarity search
         const vectorSimilarity = sql<number>`
-    1 - (
-      ${chunk.embeddings} <=> 
-      ${sql.raw(`'[${embedding.join(",")}]'`)}::vector
-    )
-  `;
+1 - ( ${chunk.embeddings} <=> ${sql.raw(`'[${embedding.join(",")}]'`)}::vector
+) `;
 
         matchingChunks = await db
           .select({
@@ -151,9 +146,8 @@ export async function POST(req: Request) {
 
     if (matchingChunks.length > 0) {
       context += matchingChunks[0].text;
-    }
+    } // System prompt with context
 
-    // System prompt with context
     const systemPrompt = `You are Vike AI, a knowledgeable assistant for personal knowledge management. 
 Use the following context when relevant. Maintain natural conversation flow and markdown formatting.
 
@@ -184,11 +178,10 @@ Examples:
 - User: "Add all contents from my Sales Prospects sheet to leads"
 - Action: Call addToLead tool with sheetName="Sales Prospects"
 
-- User: "Can you import the data from my Client List sheet?"  
+- User: "Can you import the data from my Client List sheet?"  
 - Action: Call addToLead tool with sheetName="Client List"
 `;
 
-    // Stream the AI response
     const result = streamText({
       model: google("gemini-1.5-flash"),
       system: systemPrompt,
@@ -198,26 +191,31 @@ Examples:
           description: `Import leads from a Google Sheet into the user's lead database. Use this tool when the user asks to import, add, or load data from a Google Sheet into their leads.`,
           parameters: addToLeadSchema,
           execute: async ({ sheetName }) => {
+            data.append(
+              JSON.stringify({
+                tool_status: `Importing leads from "${sheetName}"...`,
+              })
+            );
             try {
               const response = await axios.post(
                 `${
-                  process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+                  process.env.NEXT_PUBLIC_URL || "http://localhost:3000"
                 }/api/importLeads`,
                 { sheetName },
                 { headers: { Cookie: req.headers.get("cookie") || "" } }
               );
 
-              const data = response.data;
+              const responseData = response.data; // 2. The return value serves as the success message AFTER the tool completes
 
-              if (data.success) {
-                let message = `✅ ${data.message}`;
-                if (data.skipped > 0) {
-                  message += ` (${data.skipped} leads were skipped due to validation errors)`;
+              if (responseData.success) {
+                let message = `✅ ${responseData.message}`;
+                if (responseData.skipped > 0) {
+                  message += ` (${responseData.skipped} leads were skipped due to validation errors)`;
                 }
                 return message;
               } else {
                 return `❌ Failed to import leads from sheet "${sheetName}". Error: ${
-                  data.error || "Unknown error"
+                  responseData.error || "Unknown error"
                 }`;
               }
             } catch (error: any) {
