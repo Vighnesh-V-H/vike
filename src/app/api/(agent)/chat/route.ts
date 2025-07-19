@@ -77,10 +77,8 @@ export async function POST(req: Request) {
   }[] = [];
 
   const currentDate = new Date();
-  const readableDate = format(currentDate, "EEEE, MMMM d, yyyy");
 
   try {
-    // Create or validate chat history
     if (!currentChatId) {
       const title = String(userMessage).substring(0, 100) || "New chat";
       const [newChat] = await db
@@ -121,11 +119,9 @@ export async function POST(req: Request) {
 
     let context = "";
     if (typeof userMessage === "string") {
-      // Generate query embedding
       const embedding = await createEmbedding(userMessage);
 
       if (embedding) {
-        // Vector similarity search
         const vectorSimilarity = sql<number>`
 1 - ( ${chunk.embeddings} <=> ${sql.raw(`'[${embedding.join(",")}]'`)}::vector
 ) `;
@@ -153,7 +149,6 @@ export async function POST(req: Request) {
       context += matchingChunks[0].text;
     }
 
-    // System prompt with context
     const systemPrompt = `You are Vike AI, a knowledgeable assistant for personal knowledge management. 
 Use the following context when relevant. Maintain natural conversation flow and markdown formatting.
 
@@ -307,7 +302,6 @@ After using a tool, provide a helpful response that acknowledges the action take
               JSON.stringify({ tool_status: `Attempting to delete leads...` })
             );
             try {
-              // Use POST and send filters in the body
               const response = await axios.post(
                 `${
                   process.env.NEXT_PUBLIC_URL || "http://localhost:3000"
