@@ -1,9 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-
 import { useChat } from "@ai-sdk/react";
-
 import { ArrowUpIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +34,7 @@ export function ChatForm({
   let id: string | null;
   const router = useRouter();
 
-  const { messages, input, setInput, append } = useChat({
+  const { messages, input, setInput, append, isLoading } = useChat({
     api: "/api/chat",
     id: chatId,
     onResponse: (response) => {
@@ -80,6 +78,17 @@ export function ChatForm({
           {message.content}
         </div>
       ))}
+      {isLoading && (
+        <div
+          data-role='assistant'
+          className='max-w-[80%] self-start rounded-xl bg-gray-100 px-3 py-2 text-sm text-black'>
+          <div className='flex items-center gap-1.5'>
+            <span className='h-2 w-2 animate-pulse rounded-full bg-blue-500 [animation-delay:-0.3s]' />
+            <span className='h-2 w-2 animate-pulse rounded-full bg-blue-500 [animation-delay:-0.15s]' />
+            <span className='h-2 w-2 animate-pulse rounded-full bg-blue-500' />
+          </div>
+        </div>
+      )}
     </div>
   );
 

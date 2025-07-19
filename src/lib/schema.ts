@@ -88,15 +88,26 @@ export const displayLeadsSchema = z.object({
     .describe("Find a lead by their exact email address."),
 });
 
-export const deleteRequestSchema = z.object({
-  leadIds: z
-    .array(z.string().uuid("Invalid lead ID format"))
-    .min(1, "At least one lead ID is required"),
+export const deleteFilterSchema = z.object({
+  identifier: z.string().optional(),
+  status: z.string().optional(),
+  priority: z.string().optional(),
+  source: z.string().optional(),
 });
 
 export const deleteLeadsSchema = z.object({
   identifier: z
     .string()
-    .min(1, "An identifier (name or email) is required.")
-    .describe("The full name or email of the lead to delete."),
+    .optional()
+    .describe("The full name or email of a single lead to delete."),
+
+  status: z
+    .string()
+    .optional()
+    .describe("The status for bulk deleting leads (e.g., 'lost', 'won')."),
+  priority: z
+    .string()
+    .optional()
+    .describe("The priority for bulk deleting leads."),
+  source: z.string().optional().describe("The source for bulk deleting leads."),
 });

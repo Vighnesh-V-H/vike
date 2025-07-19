@@ -1,11 +1,11 @@
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { leads } from "@/db/schema";
-import { deleteRequestSchema } from "@/lib/schema";
-import { and, inArray, eq } from "drizzle-orm";
+import { deleteFilterSchema } from "@/lib/schema";
+import { and, eq, or, like, SQL } from "drizzle-orm";
+import { z } from "zod";
 
-
-export async function DELETE(req: Request) {
+export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -13,45 +13,68 @@ export async function DELETE(req: Request) {
     }
     const userId = session.user.id;
 
-    const body = await req.json();
-    const validation = deleteRequestSchema.safeParse(body);
+    const filters = await req.json();
 
+    const validation = deleteFilterSchema.safeParse(filters);
     if (!validation.success) {
       return Response.json(
-        { error: "Invalid request", details: validation.error.errors },
+        { error: "Invalid filters provided" },
+        { status: 400 }
+      );
+    }
+    const { identifier, status, priority, source } = validation.data;
+
+    const conditions: (SQL | undefined)[] = [eq(leads.userId, userId)];
+
+    if (identifier) {
+      conditions.push(
+        or(eq(leads.fullName, identifier), eq(leads.email, identifier))
+      );
+    }
+    if (status) {
+      conditions.push(
+        eq(leads.status, status as "new" | "contacted" | "won" | "lost")
+      );
+    }
+    if (priority) {
+      conditions.push(
+        eq(leads.priority, priority as "high" | "medium" | "low")
+      );
+    }
+    if (source) {
+      conditions.push(eq(leads.source, source));
+    }
+
+    // 3. Safety Check: Ensure at least one filter is applied
+    if (conditions.length <= 1) {
+      return Response.json(
+        { error: "An identifier or filter is required for deletion." },
         { status: 400 }
       );
     }
 
-    const { leadIds } = validation.data;
-
+    // 4. Execute deletion in the DB
     const result = await db
       .delete(leads)
-      .where(and(eq(leads.userId, userId), inArray(leads.id, leadIds)))
+      .where(and(...conditions))
       .returning({ deletedId: leads.id });
 
     if (result.length === 0) {
       return Response.json(
-        {
-          error:
-            "No leads were deleted. They may not exist or you may not have permission.",
-        },
+        { message: "No leads found matching the criteria to delete." },
         { status: 404 }
       );
     }
 
     return Response.json({
       success: true,
-      message: `Successfully deleted ${result.length} leads.`,
+      message: `Successfully deleted ${result.length} lead(s).`,
       deletedCount: result.length,
     });
   } catch (error: any) {
-    console.error("Error deleting leads:", error);
+    console.error("Error during bulk delete:", error);
     return Response.json(
-      {
-        error: "Failed to delete leads",
-        details: error.message || "Unknown error",
-      },
+      { error: "Failed to delete leads", details: error.message },
       { status: 500 }
     );
   }

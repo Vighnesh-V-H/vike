@@ -77,10 +77,8 @@ export async function POST(req: Request) {
   }[] = [];
 
   const currentDate = new Date();
-  const readableDate = format(currentDate, "EEEE, MMMM d, yyyy");
 
   try {
-    // Create or validate chat history
     if (!currentChatId) {
       const title = String(userMessage).substring(0, 100) || "New chat";
       const [newChat] = await db
@@ -121,11 +119,9 @@ export async function POST(req: Request) {
 
     let context = "";
     if (typeof userMessage === "string") {
-      // Generate query embedding
       const embedding = await createEmbedding(userMessage);
 
       if (embedding) {
-        // Vector similarity search
         const vectorSimilarity = sql<number>`
 1 - ( ${chunk.embeddings} <=> ${sql.raw(`'[${embedding.join(",")}]'`)}::vector
 ) `;
@@ -153,7 +149,6 @@ export async function POST(req: Request) {
       context += matchingChunks[0].text;
     }
 
-    // System prompt with context
     const systemPrompt = `You are Vike AI, a knowledgeable assistant for personal knowledge management. 
 Use the following context when relevant. Maintain natural conversation flow and markdown formatting.
 
@@ -183,18 +178,22 @@ When you detect such requests:
 2.  **Displaying Leads**: When a user asks to see, show, find, or list leads, you MUST use the \`displayLeads\` tool. This tool can filter by criteria like status, priority, source, etc.
     - User: "Show me all high priority leads" -> Action: Call displayLeads with priority="high"
     - User: "List the new leads" -> Action: Call displayLeads with status="new"
+3. ** Deleting Leads**: When a user asks to delete, remove, get rid of, discard, or erase leads, you MUST use the deleteLeads tool. This can be for a single lead (by name/email) or in bulk (by criteria like status). Crucially, you must ask for explicit confirmation from the user before executing ANY deletion.
 
-    Deleting Leads: When a user asks to delete, remove, get rid of, discard, or erase a lead, you MUST use the deleteLeads tool. First, identify the lead by its full name or email. Crucially, you must ask for explicit confirmation from the user before executing the deletion.
+Single Deletion Example:
 
 User: "Please remove the lead 'Jane Smith'."
 
 Action: First, respond with "Are you sure you want to delete the lead for Jane Smith?". If the user confirms, then call deleteLeads with identifier="Jane Smith".
 
-User: "Get rid of the lead with email 'test@example.com'."
+Bulk Deletion Example:
 
-Action: First, respond with "Are you sure you want to delete the lead with email test@example.com?". If the user confirms, then call deleteLeads with identifier="test@example.com".
+User: "Remove all leads that we lost."
 
-Examples:
+Action: First, respond with "Are you sure you want to delete all 'lost' leads?".
+** If the user confirms, then call deleteLeads tool with status="lost".**
+
+    Examples:
 - User: "Add all contents from my Sales Prospects sheet to leads"
 - Action: Call addToLead tool with sheetName="Sales Prospects"
 
@@ -296,21 +295,19 @@ After using a tool, provide a helpful response that acknowledges the action take
 
         deleteLeads: tool({
           description:
-            "Deletes a lead from the system using their name or email.",
-          parameters: deleteLeadsSchema,
-          execute: async ({ identifier }) => {
+            "Deletes one or more leads based on an identifier or filter criteria.",
+          parameters: deleteLeadsSchema, // Use the schema with optional fields
+          execute: async (filters) => {
             data.append(
-              JSON.stringify({
-                tool_status: `Attempting to delete lead: "${identifier}"...`,
-              })
+              JSON.stringify({ tool_status: `Attempting to delete leads...` })
             );
             try {
-              const response = await axios.delete(
+              const response = await axios.post(
                 `${
                   process.env.NEXT_PUBLIC_URL || "http://localhost:3000"
-                }/api/leads/delete-lead`,
+                }/api/delete-leads`,
+                filters,
                 {
-                  params: { identifier }, // Pass identifier as a query parameter
                   headers: { Cookie: req.headers.get("cookie") || "" },
                 }
               );
@@ -318,14 +315,14 @@ After using a tool, provide a helpful response that acknowledges the action take
               if (responseData.success) {
                 return `✅ ${responseData.message}`;
               } else {
-                return `❌ Failed to delete lead. Error: ${
+                return `❌ Failed to delete lead(s). Error: ${
                   responseData.error || "Unknown error"
                 }`;
               }
             } catch (error: any) {
               const errorMessage =
                 error.response?.data?.error || error.message || "Unknown error";
-              return `❌ Failed to delete lead "${identifier}". Error: ${errorMessage}`;
+              return `❌ Failed to execute deletion. Error: ${errorMessage}`;
             }
           },
         }),
