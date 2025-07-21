@@ -5,8 +5,7 @@ import { db } from "@/db";
 import { chatHistory, chatMessages, documents, chunk } from "@/db/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { createEmbedding } from "@/lib/embedding";
-import { StreamData } from "ai";
-import { format } from "date-fns";
+import { StreamData, createDataStream, CreateMessage } from "ai";
 import {
   addToLeadSchema,
   deleteLeadsSchema,
@@ -36,7 +35,6 @@ export async function POST(req: Request) {
   const { messages, id }: { messages: CoreMessage[]; id?: string } =
     await req.json();
 
-  // Filter out messages with empty content to prevent API errors
   const validMessages = messages.filter((msg) => {
     const content = msg.content;
     if (typeof content === "string") {
@@ -75,8 +73,6 @@ export async function POST(req: Request) {
     similarity: number;
     text: string;
   }[] = [];
-
-  const currentDate = new Date();
 
   try {
     if (!currentChatId) {
@@ -148,6 +144,7 @@ export async function POST(req: Request) {
     if (matchingChunks.length > 0) {
       context += matchingChunks[0].text;
     }
+    console.log(context);
 
     const systemPrompt = `You are Vike AI, a knowledgeable assistant for personal knowledge management. 
 Use the following context when relevant. Maintain natural conversation flow and markdown formatting.
@@ -296,7 +293,7 @@ After using a tool, provide a helpful response that acknowledges the action take
         deleteLeads: tool({
           description:
             "Deletes one or more leads based on an identifier or filter criteria.",
-          parameters: deleteLeadsSchema, // Use the schema with optional fields
+          parameters: deleteLeadsSchema,
           execute: async (filters) => {
             data.append(
               JSON.stringify({ tool_status: `Attempting to delete leads...` })
