@@ -72,7 +72,7 @@ export const displayLeadsSchema = z.object({
   priority: z
     .string()
     .optional()
-    .describe("Filter leads by their priority, e.g., 'high', 'low'."),
+    .describe("Filter leads by their priority, e.g., 'high','medium' ,'low'."),
   source: z
     .string()
     .optional()
