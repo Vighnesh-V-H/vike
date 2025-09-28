@@ -42,9 +42,7 @@ export function ChatForm({
     onResponse: (response) => {
       id = response.headers.get("X-Chat-ID");
     },
-    onToolCall() {
-      window.location.reload();
-    },
+
     onFinish: () => {
       router.push(`/agent/chat/${id}`);
     },

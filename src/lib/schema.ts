@@ -68,7 +68,7 @@ export const displayLeadsSchema = z.object({
   status: z
     .string()
     .optional()
-    .describe("Filter leads by their status, e.g., 'new', 'contacted'."),
+    .describe("Filter leads by their status, e.g., 'new', 'contacted' , won"),
   priority: z
     .string()
     .optional()

@@ -1,19 +1,21 @@
-// lib/queue/queue.ts
-import { Queue } from "bullmq";
-import IORedis from "ioredis";
+// lib/queue/queue.ts (queue disabled)
+// import { Queue } from "bullmq";
+// import IORedis from "ioredis";
 
-// Export the Redis connection
-export const connection = new IORedis(process.env.REDIS_DATABASE_URL!, {
-  tls: {
-    rejectUnauthorized: false,
-  },
-  maxRetriesPerRequest: null,
-});
+export const connection: null = null;
 
-export const documentQueue = new Queue("document-processing", {
-  connection,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: { type: "exponential", delay: 5000 },
+export const documentQueue = {
+  add: async (...args: unknown[]) => {
+    console.warn("Document queue is disabled; skipping job enqueue.", {
+      payload: args,
+    });
+    return null;
   },
-});
+};
+
+/*
+Original implementation (commented for temporary RAG removal):
+
+...existing code...
+
+*/
