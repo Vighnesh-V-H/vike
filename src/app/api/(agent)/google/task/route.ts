@@ -1,43 +1,36 @@
-import { type CoreMessage, streamText, tool } from "ai";
+import { streamText, tool } from "ai";
 import { google } from "@ai-sdk/google";
 import { auth } from "@/auth";
-import { StreamData } from "ai";
 import { googleTaskSchema } from "@/lib/schema";
 import { getOAuth2ClientForUser } from "@/lib/integrations/google/getOauth";
 import { insertGoogleTask } from "@/lib/integrations/google/insertTask";
 import { format } from "date-fns";
+import { z } from "zod";
 
 export async function POST(req: Request) {
   const session = await auth();
-  const data = new StreamData();
-
   if (!session?.user?.id) {
-    return new Response(JSON.stringify({ error: "Unauthenticated" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: "Unauthenticated" }),
+      { status: 401, headers: { "Content-Type": "application/json" } }
+    );
   }
-  const user = session.user;
+  const userId = session.user.id;
 
-  if (!user || !user.id) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  const { messages } : { messages: any[] } = await req.json();
 
-  const { messages }: { messages: CoreMessage[] } = await req.json();
-
-  const currentDate = new Date();
-  const rfc3339Date = currentDate.toISOString();
-  const readableDate = format(currentDate, "EEEE, MMMM d, yyyy");
-  const dateOnly = format(currentDate, "yyyy-MM-dd");
+  const now = new Date();
+  const rfc3339Date = now.toISOString();
+  const readableDate = format(now, "EEEE, MMMM d, yyyy");
+  const dateOnly = format(now, "yyyy-MM-dd");
 
   try {
-    // Stream the AI response focused only on task creation
-    const result = streamText({
-      model: google("gemini-1.5-flash"),
-      system: `You are Vike AI, an efficient task creation assistant. Your sole purpose is to interpret user requests and create appropriate Google Tasks.
+    const result =  streamText({
+      model: google("gemini-2.5-flash"),
+      messages: [
+        {
+          role: "system",
+          content: `You are Vike AI, an efficient task creation assistant. Your sole purpose is to interpret user requests and create appropriate Google Tasks.
 
 CURRENT DATE INFORMATION:
 - Current Date (RFC3339): ${rfc3339Date}
@@ -50,56 +43,42 @@ Task Management:
 - For "tomorrow", add 1 day to the current date
 - For "next week", add 7 days to the current date
 - For "this weekend", calculate the upcoming Saturday from current date
-`,
-      messages,
+`
+        },
+        ...messages
+      ],
       tools: {
         createGoogleTask: tool({
-          description: `Create a Google Task for the user.`,
-          parameters: googleTaskSchema,
-          execute: async ({ title, notes, due }) => {
+          description: "Create a Google Task for the user.",
+          inputSchema: googleTaskSchema,
+          execute: async (params:z.infer<typeof googleTaskSchema>) => {
             try {
-              const oauth2Client = await getOAuth2ClientForUser(user.id!);
-              const result = await insertGoogleTask(oauth2Client, {
-                title,
-                notes: notes || "",
-                due,
+              const oauth2Client = await getOAuth2ClientForUser(userId);
+              const inserted = await insertGoogleTask(oauth2Client, {
+                title:params.title,
+                notes:params.notes,
+                due:params.due,
               });
-
-              return `✅ Task "${
-                result.title
-              }" created successfully with due date: ${
-                result.due ?? "no due date"
-              }.`;
-            } catch {
-              return `❌ Failed to create task`;
+              return {
+                success: true,
+                message: `✅ Task "${inserted.title}" created successfully with due date: ${inserted.due ?? "none"}`,
+              };
+            } catch (err) {
+              console.error("Error in createGoogleTask:", err);
+              return { success: false, message: `❌ Failed to create task` };
             }
           },
         }),
-      },
-      onFinish: async (completion) => {
-        try {
-          if (completion.toolResults) {
-            data.append(completion.toolResults[0].result);
-          }
-        } finally {
-          await data.close();
-        }
-      },
+      }
     });
 
-    return result.toDataStreamResponse({
-      headers: {
-        "Content-Type": "text/plain",
-      },
-      data,
-    });
-  } catch (error) {
+
+    return result.toUIMessageStreamResponse();
+  } catch (err) {
+    console.error("Task-creation POST error:", err);
     return new Response(
       JSON.stringify({ error: "Task creation process failed" }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 }

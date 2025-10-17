@@ -39,7 +39,7 @@ export async function getGoogleTasks(oauth2Client: OAuth2Client) {
     });
   }
 
-  console.log(result);
+
 
   return result;
 }

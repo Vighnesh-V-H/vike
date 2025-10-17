@@ -44,7 +44,7 @@ function Layout({ children }: { children: React.ReactNode }) {
               </div>
             </header>
             <main
-              className={`flex-1 dark:bg-[#0f1011] max-h-[92%] dark:text-white`}>
+              className={`flex-1 max-h-[92%] dark:text-white`}>
               {children}
               <Toaster />
             </main>

@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const validation = requestSchema.safeParse(body);
     if (!validation.success) {
       return Response.json(
-        { error: "Invalid request", details: validation.error.errors },
+        { error: "Invalid request", details: validation.error },
         { status: 400 }
       );
     }

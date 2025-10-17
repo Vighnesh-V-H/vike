@@ -1,11 +1,10 @@
-import { type CoreMessage, streamText, tool } from "ai";
+import { type UIMessage, streamText, tool, convertToModelMessages, stepCountIs } from "ai";
 import { google } from "@ai-sdk/google";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { chatHistory, chatMessages, documents, chunk } from "@/db/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
-import { createEmbedding } from "@/lib/embedding";
-import { StreamData, createDataStream, CreateMessage } from "ai";
+import { chatHistory, chatMessages } from "@/db/schema";
+import { eq } from "drizzle-orm";
+
 import {
   addToLeadSchema,
   deleteLeadsSchema,
@@ -13,9 +12,16 @@ import {
 } from "@/lib/schema";
 import axios from "axios";
 
+function extractTextFromParts(parts: any[]): string {
+  return parts
+    .filter((part) => part.type === "text")
+    .map((part) => part.text)
+    .join("\n")
+    .trim();
+}
+
 export async function POST(req: Request) {
   const session = await auth();
-  const data = new StreamData();
 
   if (!session?.user?.id) {
     return new Response(JSON.stringify({ error: "Unauthenticated" }), {
@@ -32,25 +38,18 @@ export async function POST(req: Request) {
     });
   }
 
-  const { messages, id }: { messages: CoreMessage[]; id?: string } =
+  let { messages: uiMessages, id }: { messages: UIMessage[]; id?: string } =
     await req.json();
 
-  const validMessages = messages.filter((msg) => {
-    const content = msg.content;
-    if (typeof content === "string") {
-      return content.trim().length > 0;
+  const validMessages = uiMessages.filter((msg) => {
+    const parts = msg.parts || [];
+    if (parts.length === 0) {
+      return false;
     }
-    if (Array.isArray(content)) {
-      return (
-        content.length > 0 &&
-        content.some(
-          (part) =>
-            (part.type === "text" && part.text.trim().length > 0) ||
-            part.type === "image"
-        )
-      );
-    }
-    return false;
+    return parts.some(
+      (part) =>
+        (part.type === "text" && part.text.trim().length > 0) 
+    );
   });
 
   if (validMessages.length === 0) {
@@ -65,18 +64,12 @@ export async function POST(req: Request) {
 
   let currentChatId = id;
 
-  const userMessage = validMessages[validMessages.length - 1]?.content;
-
-  let matchingChunks: {
-    documentTitle: string;
-    documentUrl?: string;
-    similarity: number;
-    text: string;
-  }[] = [];
+  const lastValidMessage = validMessages[validMessages.length - 1];
+  const userMessageText = extractTextFromParts(lastValidMessage.parts || []);
 
   try {
     if (!currentChatId) {
-      const title = String(userMessage).substring(0, 100) || "New chat";
+      const title = userMessageText.substring(0, 100) || "New chat";
       const [newChat] = await db
         .insert(chatHistory)
         .values({ userId: session.user.id, title })
@@ -91,11 +84,7 @@ export async function POST(req: Request) {
       .limit(1);
 
     if (!existingChat.length) {
-      const title =
-        String(validMessages[validMessages.length - 1]?.content).substring(
-          0,
-          100
-        ) || "New chat";
+      const title = userMessageText.substring(0, 100) || "New chat";
 
       await db.insert(chatHistory).values({
         id: currentChatId,
@@ -104,59 +93,22 @@ export async function POST(req: Request) {
       });
     }
 
-    const lastMessage = validMessages[validMessages.length - 1];
-    if (lastMessage && lastMessage.role === "user") {
+    if (lastValidMessage && lastValidMessage.role === "user") {
       await db.insert(chatMessages).values({
         chatId: currentChatId,
-        role: lastMessage.role,
-        content: String(lastMessage.content),
+        role: lastValidMessage.role,
+        content: userMessageText,
       });
     }
 
-    let context = "";
-    if (typeof userMessage === "string") {
-      const embedding = await createEmbedding(userMessage);
-
-      if (embedding) {
-        const vectorSimilarity = sql<number>`
-1 - ( ${chunk.embeddings} <=> ${sql.raw(`'[${embedding.join(",")}]'`)}::vector
-) `;
-
-        matchingChunks = await db
-          .select({
-            text: chunk.textContent,
-            similarity: vectorSimilarity,
-            documentTitle: documents.title,
-          })
-          .from(chunk)
-          .innerJoin(documents, eq(chunk.documentId, documents.id))
-          .where(
-            and(
-              eq(documents.userId, session.user.id),
-              sql`${vectorSimilarity} > 0.3`
-            )
-          )
-          .orderBy(desc(vectorSimilarity))
-          .limit(5);
-      }
-    }
-
-    if (matchingChunks.length > 0) {
-      context += matchingChunks[0].text;
-    }
-    console.log(context);
-
-    const systemPrompt = `You are Vike AI, a knowledgeable assistant for personal knowledge management. 
-Use the following context when relevant. Maintain natural conversation flow and markdown formatting.
-
-${context ? `<context>\n${context}\n</context>` : ""}
+    const systemPrompt = `You are Vike AI, a knowledgeable assistant for personal knowledge management.
+Maintain natural conversation flow and markdown formatting.
 
 Guidelines:
 1. Be concise but thorough
-2. Never refer sources naturally when using context
-3. Use markdown for formatting
-4. If unsure, say: There's no clear data about this topic
-5. Focus on user's own knowledge base
+2. Use markdown for formatting
+3. If unsure, say: There's no clear data about this topic
+4. Focus on user's own knowledge base
 
 IMPORTANT: When a user asks to import, add, or load data from a Google Sheet into leads, you MUST use the addToLead tool. Look for these keywords and phrases:
 - "add from sheet"
@@ -200,20 +152,16 @@ Action: First, respond with "Are you sure you want to delete all 'lost' leads?".
 After using a tool, provide a helpful response that acknowledges the action taken and its results.
 `;
 
-    const result = streamText({
-      model: google("gemini-1.5-flash"),
+    const result =  streamText({
+      model: google("gemini-2.5-flash-preview-04-17"),
       system: systemPrompt,
-      messages: validMessages,
+      messages: convertToModelMessages(validMessages),
+      stopWhen: stepCountIs(5),
       tools: {
         addToLead: tool({
           description: `Import leads from a Google Sheet into the user's lead database. Use this tool when the user asks to import, add, or load data from a Google Sheet into their leads.`,
-          parameters: addToLeadSchema,
+          inputSchema: addToLeadSchema,
           execute: async ({ sheetName }) => {
-            data.append(
-              JSON.stringify({
-                tool_status: `Importing leads from "${sheetName}"...`,
-              })
-            );
             try {
               const response = await axios.post(
                 `${
@@ -247,11 +195,8 @@ After using a tool, provide a helpful response that acknowledges the action take
         displayLeads: tool({
           description:
             "Fetches and displays leads based on optional filter criteria.",
-          parameters: displayLeadsSchema,
+          inputSchema: displayLeadsSchema,
           execute: async (filters) => {
-            data.append(
-              JSON.stringify({ tool_status: `Searching for leads...` })
-            );
             try {
               const response = await axios.get(
                 `${
@@ -293,11 +238,8 @@ After using a tool, provide a helpful response that acknowledges the action take
         deleteLeads: tool({
           description:
             "Deletes one or more leads based on an identifier or filter criteria.",
-          parameters: deleteLeadsSchema,
+          inputSchema: deleteLeadsSchema,
           execute: async (filters) => {
-            data.append(
-              JSON.stringify({ tool_status: `Attempting to delete leads...` })
-            );
             try {
               const response = await axios.post(
                 `${
@@ -324,69 +266,30 @@ After using a tool, provide a helpful response that acknowledges the action take
           },
         }),
       },
-      onFinish: async (completion) => {
+      onFinish: async ({ text, toolResults, finishReason, usage }) => {
         try {
-          const cleanContent = completion.text.replace(
+          const cleanContent = text.replace(
             /<context>[\s\S]*?<\/context>/g,
             ""
-          );
+          ).trim();
 
-          let finalContent = cleanContent;
-
-          if (completion.toolResults && completion.toolResults.length > 0) {
-            const toolResultsText = completion.toolResults
-              .map((toolResult) => {
-                if (
-                  toolResult.result &&
-                  typeof toolResult.result === "string"
-                ) {
-                  return toolResult.result;
-                }
-                return "";
-              })
-              .filter(Boolean)
-              .join("\n\n");
-
-            if (toolResultsText && !finalContent.includes(toolResultsText)) {
-              if (!finalContent.trim()) {
-                finalContent = toolResultsText;
-              } else {
-                finalContent = finalContent.trim() + "\n\n" + toolResultsText;
-              }
-            }
-          }
-
-          if (currentChatId && finalContent.trim()) {
+          if (currentChatId && cleanContent) {
             await db.insert(chatMessages).values({
               chatId: currentChatId,
               role: "assistant",
-              content: finalContent,
-            });
-          }
-
-          if (context) {
-            data.appendMessageAnnotation({
-              context: matchingChunks.map((c) => ({
-                document: c.documentTitle,
-                url: c.documentUrl || "",
-                similarity: Number(c.similarity.toFixed(3)),
-              })),
+              content: cleanContent,
             });
           }
         } catch (error) {
           console.error("Error in onFinish:", error);
-        } finally {
-          await data.close();
         }
       },
     });
 
-    return result.toDataStreamResponse({
+    return result.toUIMessageStreamResponse({
       headers: {
-        "X-Chat-ID": currentChatId,
-        "Content-Type": "text/plain",
+        "X-Chat-ID": currentChatId || "",
       },
-      data,
     });
   } catch (error) {
     console.error("Error in chat:", error);
