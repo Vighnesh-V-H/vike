@@ -48,6 +48,7 @@ import { ChevronDown, ChevronUp, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
+import React from "react";
 
 import { History } from "@/components/history";
 import {
@@ -73,13 +74,16 @@ const queryClient = new QueryClient({
   },
 });
 
+// Type to accept both Lucide icons and custom icon components
+type IconComponent = LucideIcon | React.FC<{ className?: string; size?: number }>;
+
 export function NavMain({
   items,
 }: {
   items: {
     title: string;
     url: string;
-    icon: LucideIcon;
+    icon: IconComponent;
     isActive?: boolean;
   }[];
 }) {

@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { FC } from "react";
 
 export type FAQItem = {
   question: string;
@@ -8,7 +9,7 @@ export type FAQItem = {
 export interface Integration {
   name: string;
   description: string;
-  icon: LucideIcon;
+  icon: FC;
   redirectUrl: string;
   color: string;
 }

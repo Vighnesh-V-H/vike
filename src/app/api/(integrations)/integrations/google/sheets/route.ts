@@ -7,7 +7,7 @@ import { integrations } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { decrypt } from "@/lib/encryption";
 
-// GET: List all user's Google Sheets
+
 export async function GET(request: NextRequest) {
   const session = await auth();
 

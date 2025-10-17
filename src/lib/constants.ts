@@ -5,13 +5,16 @@ import {
   Mail,
   Settings,
   Workflow,
-  Github,
-  Twitter,
-  Slack,
-  FileText,
-  HardDrive,
-  FileSpreadsheet,
 } from "lucide-react";
+
+import {
+  GoogleIcon,
+  MicrosoftExcelIcon,
+  GitHubIcon,
+  TwitterIcon,
+  SlackIcon,
+  NotionIcon,
+} from "@/components/icons";
 
 import {
   FAQItem,
@@ -288,7 +291,7 @@ export const sideBarOptions = {
     {
       title: "Google Sheets",
       url: "/google/sheets",
-      icon: FileSpreadsheet,
+      icon: MicrosoftExcelIcon,
     },
     {
       title: "Integrations",
@@ -308,14 +311,14 @@ export const integrations: Integration[] = [
   {
     name: "google",
     description: "Connect to Google Drive for document storage and sharing.",
-    icon: HardDrive,
+    icon: GoogleIcon,
     redirectUrl: "authurl",
     color: "bg-blue-500",
   },
   {
     name: "Microsoft Excel",
     description: "Connect to Excel files for spreadsheet data and analysis.",
-    icon: FileSpreadsheet,
+    icon: MicrosoftExcelIcon,
     redirectUrl:
       "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
     color: "bg-green-600",
@@ -323,14 +326,14 @@ export const integrations: Integration[] = [
   {
     name: "GitHub",
     description: "Connect your GitHub repositories for seamless integration.",
-    icon: Github,
+    icon: GitHubIcon,
     redirectUrl: "https://github.com/login/oauth/authorize",
     color: "bg-gray-900",
   },
   {
     name: "Twitter",
     description: "Share updates and connect with your audience on Twitter.",
-    icon: Twitter,
+    icon: TwitterIcon,
     redirectUrl: "https://twitter.com/oauth",
     color: "bg-blue-400",
   },
@@ -338,7 +341,7 @@ export const integrations: Integration[] = [
     name: "Slack",
     description:
       "Get notifications and updates directly in your Slack workspace.",
-    icon: Slack,
+    icon: SlackIcon,
     redirectUrl: "https://slack.com/oauth/authorize",
     color: "bg-purple-500",
   },
@@ -347,12 +350,11 @@ export const integrations: Integration[] = [
     name: "Notion",
     description:
       "Integrate with Notion for notes, documents, and project management.",
-    icon: FileText,
+    icon: NotionIcon,
     redirectUrl: "https://api.notion.com/v1/oauth/authorize",
     color: "bg-gray-800",
   },
 ];
 
 export const scopes =
-  "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/spreadsheets";
- 
+  "https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/spreadsheets";

@@ -11,20 +11,22 @@ function GoogleAuthButton() {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isExpired, setIsExpired] = useState(false);
 
   useEffect(() => {
-    // Fetch the connection status when component mounts
     const checkConnectionStatus = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get("/api/integrations/status/google");
+        const response = await axios.get("/api/oauth/status");
+        console.log(response.data);
 
         if (response.status !== 200) {
           throw new Error("Failed to fetch connection status");
         }
 
         const data = response.data;
-        setIsConnected(data.isConnected);
+        setIsExpired(Boolean(data.isExpired));
+        setIsConnected(Boolean(data.isConnected && !data.isExpired));
       } catch (err) {
         console.error("Error checking Google connection:", err);
         setError("Failed to check connection status");
@@ -76,6 +78,17 @@ function GoogleAuthButton() {
           Connected
         </Button>
       </div>
+    );
+  }
+
+  if (isExpired) {
+    return (
+      <Link href={initiateOAuth()}>
+        <Button className='cursor-pointer'>
+          Reconnect
+          <ExternalLink className='ml-2 h-4 w-4' />
+        </Button>
+      </Link>
     );
   }
 
