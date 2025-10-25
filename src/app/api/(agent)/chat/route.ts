@@ -152,8 +152,8 @@ Action: First, respond with "Are you sure you want to delete all 'lost' leads?".
 After using a tool, provide a helpful response that acknowledges the action taken and its results.
 `;
 
-    const result =  streamText({
-      model: google("gemini-2.5-flash-preview-04-17"),
+    const result = streamText({
+      model: google("gemini-2.5-flash-lite-preview-09-2025"),
       system: systemPrompt,
       messages: convertToModelMessages(validMessages),
       stopWhen: stepCountIs(5),
@@ -268,10 +268,9 @@ After using a tool, provide a helpful response that acknowledges the action take
       },
       onFinish: async ({ text, toolResults, finishReason, usage }) => {
         try {
-          const cleanContent = text.replace(
-            /<context>[\s\S]*?<\/context>/g,
-            ""
-          ).trim();
+          const cleanContent = text
+            .replace(/<context>[\s\S]*?<\/context>/g, "")
+            .trim();
 
           if (currentChatId && cleanContent) {
             await db.insert(chatMessages).values({
@@ -286,7 +285,7 @@ After using a tool, provide a helpful response that acknowledges the action take
       },
     });
 
-    return result.toUIMessageStreamResponse({
+    return result.toTextStreamResponse({
       headers: {
         "X-Chat-ID": currentChatId || "",
       },
