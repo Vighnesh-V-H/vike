@@ -53,6 +53,21 @@ export function ChatForm({
   const endOfMessagesRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    const savedInput = localStorage.getItem("chat-input");
+    if (savedInput && input.trim() === "") {
+      setInput(savedInput);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (input.trim()) {
+      localStorage.setItem("chat-input", input);
+    } else {
+      localStorage.removeItem("chat-input");
+    }
+  }, [input]);
+
+  useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
@@ -72,13 +87,14 @@ export function ChatForm({
   };
 
   const header = (
-    <header className='m-auto flex max-w-96 flex-col gap-5 text-center'>
-      Ask Anything
+    <header className="flex flex-col items-center gap-4 text-center max-w-md">
+      <h1 className="text-3xl font-bold text-gray-900">Ask Anything</h1>
+      <p className="text-gray-600 max-w-sm">Start a conversation with our AI assistant.</p>
     </header>
   );
 
   const messageList = (
-    <div className='my-4 flex h-fit min-h-full flex-col gap-4'>
+    <div className="my-4 flex flex-col gap-4">
       {messages.map((message: any, index) => {
         if (message.role === "assistant") {
           const hasToolCalls =
@@ -93,29 +109,29 @@ export function ChatForm({
           return (
             <div
               key={message.id || index}
-              className='flex flex-col gap-2 self-start max-w-[80%]'>
+              className="flex flex-col gap-2 self-start max-w-[80%]">
               {hasToolCalls &&
                 message.toolInvocations.map((tool: any, toolIndex: number) => (
                   <div
                     key={toolIndex}
-                    className='rounded-xl bg-blue-50 border border-blue-200 px-3 py-2 text-sm'>
-                    <div className='flex items-center gap-2 mb-1'>
-                      <span className='text-blue-600 font-medium'>
+                    className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 text-sm shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-blue-600 font-semibold">
                         🔧 {tool.toolName}
                       </span>
                       {tool.state === "call" && (
-                        <span className='text-xs text-blue-500 animate-pulse'>
+                        <span className="text-xs text-blue-500 animate-pulse">
                           executing...
                         </span>
                       )}
                       {tool.state === "result" && (
-                        <span className='text-xs text-green-600'>
+                        <span className="text-xs text-green-600">
                           ✓ completed
                         </span>
                       )}
                     </div>
                     {tool.state === "result" && tool.result && (
-                      <div className='mt-2 text-gray-700 text-xs whitespace-pre-wrap'>
+                      <div className="mt-2 text-gray-700 text-xs whitespace-pre-wrap bg-white rounded-lg p-2">
                         {typeof tool.result === "string"
                           ? tool.result
                           : JSON.stringify(tool.result, null, 2)}
@@ -124,7 +140,7 @@ export function ChatForm({
                   </div>
                 ))}
               {hasContent && (
-                <div className='rounded-xl bg-gray-100 px-3 py-2 text-sm text-black whitespace-pre-wrap'>
+                <div className="rounded-xl bg-white border border-gray-200 px-4 py-3 text-sm text-gray-900 whitespace-pre-wrap shadow-sm">
                   {message.content}
                 </div>
               )}
@@ -136,7 +152,7 @@ export function ChatForm({
           return (
             <div
               key={message.id || index}
-              className='rounded-xl px-3 py-2 text-sm bg-blue-500 text-white whitespace-pre-wrap self-end max-w-[80%]'>
+              className="rounded-xl px-4 py-3 text-sm bg-blue-500 text-white whitespace-pre-wrap self-end max-w-[80%] shadow-sm">
               {message.content}
             </div>
           );
@@ -147,6 +163,43 @@ export function ChatForm({
     </div>
   );
 
+  const formClassName = "border-input bg-background focus-within:ring-ring/10 relative flex items-center rounded-[20px] border px-4 py-2 pr-10 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-0 shadow-sm";
+
+  if (!messages.length) {
+    return (
+      <main
+        className={cn(
+          "ring-none mx-auto flex h-svh max-h-[90vh] w-full max-w-full flex-col items-stretch border-none",
+          className
+        )}
+        {...props}>
+        <div className="flex-1 flex flex-col justify-center items-center gap-8 px-6">
+          {header}
+          <form onSubmit={handleSubmit} className={cn(formClassName, "w-full max-w-2xl")}>
+            <AutoResizeTextarea
+              onKeyDown={handleKeyDown}
+              onChange={(v) => setInput(v)}
+              value={input}
+              placeholder="Enter a message"
+              className="placeholder:text-muted-foreground flex-1 bg-transparent focus:outline-none min-h-[40px]"
+            />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute bottom-2 right-2 size-8 rounded-full bg-blue-500 hover:bg-blue-600">
+                  <ArrowUpIcon size={16} className="text-white" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent sideOffset={12}>Submit</TooltipContent>
+            </Tooltip>
+          </form>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main
       className={cn(
@@ -154,16 +207,16 @@ export function ChatForm({
         className
       )}
       {...props}>
-      <div className='flex-1 content-center overflow-y-auto px-6'>
-        {messages.length ? messageList : header}
+      <div className="flex-1 overflow-y-auto px-6">
+        {messageList}
         {isLoading && (
           <div
-            data-role='assistant'
-            className='self-start max-w-[20%] rounded-xl bg-gray-100 px-3 py-2 text-sm text-black'>
-            <div className='flex items-center gap-1.5'>
-              <span className='h-2 w-2 animate-pulse rounded-full bg-blue-500 [animation-delay:-0.3s]' />
-              <span className='h-2 w-2 animate-pulse rounded-full bg-blue-500 [animation-delay:-0.15s]' />
-              <span className='h-2 w-2 animate-pulse rounded-full bg-blue-500' />
+            data-role="assistant"
+            className="self-start max-w-[80%] rounded-xl bg-white border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500 [animation-delay:-0.3s]" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500 [animation-delay:-0.15s]" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
             </div>
           </div>
         )}
@@ -171,21 +224,21 @@ export function ChatForm({
       </div>
       <form
         onSubmit={handleSubmit}
-        className='border-input bg-background focus-within:ring-ring/10 relative mx-6 mb-6 flex items-center rounded-[16px] border px-3 py-1.5 pr-8 text-sm focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-0'>
+        className={cn(formClassName, "mx-auto mb-6 w-full max-w-4xl")}>
         <AutoResizeTextarea
           onKeyDown={handleKeyDown}
           onChange={(v) => setInput(v)}
           value={input}
-          placeholder='Enter a message'
-          className='placeholder:text-muted-foreground flex-1 bg-transparent focus:outline-none'
+          placeholder="Enter a message"
+          className="placeholder:text-muted-foreground flex-1 bg-transparent focus:outline-none min-h-[40px]"
         />
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              variant='ghost'
-              size='sm'
-              className='absolute bottom-1 right-1 size-6 rounded-full'>
-              <ArrowUpIcon size={16} />
+              variant="ghost"
+              size="sm"
+              className="absolute bottom-2 right-2 size-8 rounded-full bg-blue-500 hover:bg-blue-600">
+              <ArrowUpIcon size={16} className="text-white" />
             </Button>
           </TooltipTrigger>
           <TooltipContent sideOffset={12}>Submit</TooltipContent>
