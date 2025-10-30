@@ -21,7 +21,7 @@ function Layout({ children }: { children: React.ReactNode }) {
           <AppSidebar />
 
           <SidebarInset>
-            <header className='flex justify-between  h-14 shrink-0  border-b-[1px] sticky top-0 dark:border-white border-black dark:text-white items-center '>
+            <header className='flex justify-between h-14 shrink-0 border-b-[1px] sticky top-0 dark:border-white/20 border-black/20 dark:text-white items-center backdrop-blur-md bg-white/70 dark:bg-black/70 z-50'>
               <div className='flex items-center gap-2 px-4'>
                 <TooltipGlobal content='toggle sidebar'>
                   <SidebarTrigger className='-ml-1' />
@@ -43,8 +43,7 @@ function Layout({ children }: { children: React.ReactNode }) {
                 <NavUser />
               </div>
             </header>
-            <main
-              className={`flex-1 max-h-[92%] dark:text-white`}>
+            <main className={`flex-1 max-h-[92%] dark:text-white`}>
               {children}
               <Toaster />
             </main>
