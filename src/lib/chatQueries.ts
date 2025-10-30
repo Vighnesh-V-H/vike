@@ -59,3 +59,53 @@ export async function getChatHistoryWithMessages(userId: string) {
     throw error;
   }
 }
+
+export async function deleteChatById(chatId: string, userId: string) {
+  try {
+    const chat = await db
+      .select()
+      .from(chatHistory)
+      .where(eq(chatHistory.id, chatId))
+      .limit(1);
+
+    if (!chat.length || chat[0].userId !== userId) {
+      throw new Error("Unauthorized or chat not found");
+    }
+
+    await db.delete(chatHistory).where(eq(chatHistory.id, chatId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting chat", error);
+    throw error;
+  }
+}
+
+export async function updateChatTitle(
+  chatId: string,
+  userId: string,
+  newTitle: string
+) {
+  try {
+    const chat = await db
+      .select()
+      .from(chatHistory)
+      .where(eq(chatHistory.id, chatId))
+      .limit(1);
+
+    if (!chat.length || chat[0].userId !== userId) {
+      throw new Error("Unauthorized or chat not found");
+    }
+
+    const updated = await db
+      .update(chatHistory)
+      .set({ title: newTitle })
+      .where(eq(chatHistory.id, chatId))
+      .returning();
+
+    return updated[0];
+  } catch (error) {
+    console.error("Error updating chat title", error);
+    throw error;
+  }
+}

@@ -140,7 +140,7 @@ export const chatMessages = pgTable("chat_messages", {
     .$defaultFn(() => crypto.randomUUID()),
   chatId: text("chat_id")
     .notNull()
-    .references(() => chatHistory.id),
+    .references(() => chatHistory.id, { onDelete: "cascade" }),
   role: text("role")
     .$type<"data" | "system" | "user" | "assistant">()
     .notNull(),
@@ -191,11 +191,9 @@ export const documents = pgTable(
       .unique()
       .$defaultFn(() => crypto.randomUUID()),
 
-    // Source tracking
     sourceType: varchar("source_type").notNull(), // Removed FK
     sourceId: varchar("source_id", { length: 255 }).notNull(),
 
-    // Universal document properties
     title: text("title").notNull(),
     fileName: text("file_name").notNull(),
     mimeType: text("mime_type").notNull(),
