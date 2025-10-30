@@ -1,4 +1,11 @@
-import { type UIMessage, streamText, tool, convertToModelMessages, stepCountIs } from "ai";
+import {
+  type UIMessage,
+  streamText,
+  tool,
+  convertToModelMessages,
+  stepCountIs,
+  generateText,
+} from "ai";
 import { google } from "@ai-sdk/google";
 import { auth } from "@/auth";
 import { db } from "@/db";
@@ -18,6 +25,34 @@ function extractTextFromParts(parts: any[]): string {
     .map((part) => part.text)
     .join("\n")
     .trim();
+}
+
+async function generateChatTitle(userMessage: string): Promise<string> {
+  try {
+    const { text } = await generateText({
+      model: google("gemini-2.0-flash-exp"),
+      prompt: `Generate a short, concise title (3-6 words maximum) for a chat conversation that starts with this message: "${userMessage}"
+
+Rules:
+- Maximum 6 words
+- Capture the main topic or intent
+- No punctuation at the end
+- Be specific and descriptive
+- Use title case
+
+Examples:
+"How do I import leads from Google Sheets?" -> "Import Leads from Sheets"
+"What are the features of this app?" -> "App Features Overview"
+"Can you help me with sales tracking?" -> "Sales Tracking Assistance"
+
+Generate only the title, nothing else.`,
+    });
+
+    return text.trim().substring(0, 60) || "New Chat";
+  } catch (error) {
+    console.error("Error generating chat title:", error);
+    return userMessage.substring(0, 60) || "New Chat";
+  }
 }
 
 export async function POST(req: Request) {
@@ -47,8 +82,7 @@ export async function POST(req: Request) {
       return false;
     }
     return parts.some(
-      (part) =>
-        (part.type === "text" && part.text.trim().length > 0) 
+      (part) => part.type === "text" && part.text.trim().length > 0
     );
   });
 
@@ -69,7 +103,7 @@ export async function POST(req: Request) {
 
   try {
     if (!currentChatId) {
-      const title = userMessageText.substring(0, 100) || "New chat";
+      const title = await generateChatTitle(userMessageText);
       const [newChat] = await db
         .insert(chatHistory)
         .values({ userId: session.user.id, title })
@@ -84,7 +118,7 @@ export async function POST(req: Request) {
       .limit(1);
 
     if (!existingChat.length) {
-      const title = userMessageText.substring(0, 100) || "New chat";
+      const title = await generateChatTitle(userMessageText);
 
       await db.insert(chatHistory).values({
         id: currentChatId,
